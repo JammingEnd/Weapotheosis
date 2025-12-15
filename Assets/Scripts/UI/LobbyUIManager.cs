@@ -83,7 +83,7 @@ namespace SteamLobbyUI
                 if (NetworkServer.active)
                 {
                     //TODO: Change "GameplayScene" to the actual gameplay scene name
-                    NewNetworkManager.singleton.ServerChangeScene("GameplayScene");
+                    NewNetworkManager.singleton.ServerChangeScene("Map1");
                 }
             }
             

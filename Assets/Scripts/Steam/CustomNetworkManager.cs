@@ -14,6 +14,12 @@ public class NewNetworkManager : NetworkManager
     // have to cast to this type everywhere.
     public static new NewNetworkManager singleton => (NewNetworkManager)NetworkManager.singleton;
 
+    public GameObject PlayerPrefab;
+    
+    
+    
+    
+    
     /// <summary>
     /// Runs on both Server and Client
     /// Networking is NOT initialized when this fires
@@ -87,6 +93,11 @@ public class NewNetworkManager : NetworkManager
     /// <param name="newSceneName"></param>
     public override void ServerChangeScene(string newSceneName)
     {
+        if (newSceneName == "Map1")
+        {
+            this.playerPrefab = PlayerPrefab;
+            this.onlineScene = newSceneName;
+        }
         base.ServerChangeScene(newSceneName);
     }
 
