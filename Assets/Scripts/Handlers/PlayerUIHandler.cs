@@ -44,6 +44,8 @@ public class PlayerUIHandler : MonoBehaviour
 
    private void Update()
    {
+      if(_stats == null) return;
+      
       playerHealth.text = $"{_stats.CurrentHealth + _stats.CurrentShield}/{_stats.GetStat(StatType.MaxHealth)}";
       playerAmmoCounter.text = $"{_stats.CurrentAmmo}/{_stats.GetStat(StatType.GunMagazineSize)}";
       playerStamina.text = $"{_stats.CurrentStamina}/{_stats.GetStat(StatType.MaxStamina)}";
