@@ -48,7 +48,15 @@ public class PlayerStatHandler : NetworkBehaviour
 
     public override void OnStartServer()
     {
+        base.OnStartServer();
         InitializeStats();
+    }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        if(BaseStats != null)
+            InitializeStats();
     }
 
     public override void OnStartLocalPlayer()
