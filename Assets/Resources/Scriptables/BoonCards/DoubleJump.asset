@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4e62bbaee29d07a38835b8544c758ea, type: 3}
+  m_Name: DoubleJump
+  m_EditorClassIdentifier: Assembly-CSharp::BoonCardSC
+  CardName: Double Jump
+  Description: Allows you to jump twice
+  Icon: {fileID: 0}
+  BoonEffect: {fileID: 11400000, guid: 330fb52e55e9da2f38b4b972f11d46ef, type: 2}

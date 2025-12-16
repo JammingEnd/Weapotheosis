@@ -517,7 +517,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   _playerCamera: {fileID: 910350422289491054}
-  MouseSensitivity: 1
+  MouseSensitivity: 0.8
   cameraPivot: {fileID: 6768457025656609036}
 --- !u!114 &-8746252088208527552
 MonoBehaviour:
