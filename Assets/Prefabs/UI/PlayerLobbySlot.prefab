@@ -9,8 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 503290841940679243}
-  - component: {fileID: 1333299147379257977}
   - component: {fileID: 3385710198665318040}
+  - component: {fileID: 1333299147379257977}
   m_Layer: 5
   m_Name: PlayerLobbySlot
   m_TagString: Untagged
@@ -39,23 +39,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 579.9664, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1333299147379257977
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2577775454406170687}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
-  sceneId: 0
-  _assetId: 3145489981
-  serverOnly: 0
-  visibility: 0
-  hasSpawned: 0
 --- !u!114 &3385710198665318040
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74,6 +57,23 @@ MonoBehaviour:
   isReady: 0
   readyButton: {fileID: 8918898911829098771}
   NameText: {fileID: 8154938957736314238}
+--- !u!114 &1333299147379257977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2577775454406170687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 0
+  _assetId: 3145489981
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0
 --- !u!1 &3938454158796827366
 GameObject:
   m_ObjectHideFlags: 0

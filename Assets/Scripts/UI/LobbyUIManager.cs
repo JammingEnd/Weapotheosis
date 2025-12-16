@@ -83,7 +83,7 @@ namespace SteamLobbyUI
         {
             if (NetworkServer.active)
             {
-                NewNetworkManager.singleton.ServerChangeScene("Map1");
+                CustomNetworkManager.singleton.ServerChangeScene("Map1");
             }
         }
 

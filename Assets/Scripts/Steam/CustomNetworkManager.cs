@@ -8,13 +8,13 @@ using Mirror;
 	API Reference: https://mirror-networking.com/docs/api/Mirror.NetworkManager.html
 */
 
-public class NewNetworkManager : NetworkManager
+public class CustomNetworkManager : NetworkManager
 {
     // Overrides the base singleton so we don't
     // have to cast to this type everywhere.
-    public static new NewNetworkManager singleton => (NewNetworkManager)NetworkManager.singleton;
+    public static new CustomNetworkManager singleton => (CustomNetworkManager)NetworkManager.singleton;
 
-    public GameObject PlayerPrefab;
+    public GameObject PlayerGameplayPrefab;
     
     
     
@@ -95,7 +95,7 @@ public class NewNetworkManager : NetworkManager
     {
         if (newSceneName == "Map1")
         {
-            this.playerPrefab = PlayerPrefab;
+            this.playerPrefab = PlayerGameplayPrefab;
             this.onlineScene = newSceneName;
         }
         base.ServerChangeScene(newSceneName);
@@ -112,7 +112,22 @@ public class NewNetworkManager : NetworkManager
     /// Called on the server when a scene is completed loaded, when the scene load was initiated by the server with ServerChangeScene().
     /// </summary>
     /// <param name="sceneName">The name of the new scene.</param>
-    public override void OnServerSceneChanged(string sceneName) { }
+    public override void OnServerSceneChanged(string sceneName)
+    {
+        if (sceneName == "Map1")
+        {
+            foreach (var conn in NetworkServer.connections.Values)
+            {
+                if (conn.identity != null)
+                {
+                    NetworkServer.Destroy(conn.identity.gameObject);
+                }
+
+                GameObject player = Instantiate(playerPrefab);
+                NetworkServer.AddPlayerForConnection(conn, player);
+            }
+        }
+    }
 
     /// <summary>
     /// Called from ClientChangeScene immediately before SceneManager.LoadSceneAsync is executed

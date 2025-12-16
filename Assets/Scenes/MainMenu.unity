@@ -1234,9 +1234,9 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   playerListParent: {fileID: 1841594499}
-  playerNameList: []
+  playerNameTexts: []
   playerLobbyHandlers: []
-  PlayGameButton: {fileID: 1206802650}
+  playGameButton: {fileID: 1206802650}
 --- !u!1 &1634675196
 GameObject:
   m_ObjectHideFlags: 0
@@ -1494,7 +1494,6 @@ MonoBehaviour:
   playerSpawnMethod: 0
   spawnPrefabs:
   - {fileID: 4466945799964546603, guid: 477d46aaa911c1818b03e5670d1e24c6, type: 3}
-  - {fileID: 2577775454406170687, guid: 0558d775300e20411b5ead225de7c8bc, type: 3}
   - {fileID: 7273187195688825592, guid: 238ef72b02e1d854589054b5ecf6d4af, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
@@ -1511,7 +1510,7 @@ MonoBehaviour:
   evaluationMethod: 0
   evaluationInterval: 3
   timeInterpolationGui: 0
-  PlayerPrefab: {fileID: 7273187195688825592, guid: 238ef72b02e1d854589054b5ecf6d4af, type: 3}
+  PlayerGameplayPrefab: {fileID: 7273187195688825592, guid: 238ef72b02e1d854589054b5ecf6d4af, type: 3}
 --- !u!114 &1681172641
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1569,13 +1568,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b64a1848db4e5da493ccf9028dddbee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SteamLobbyUI.SteamLobby
-  syncDirection: 0
-  syncMode: 0
-  syncInterval: 0
   hostButton: {fileID: 1849409037}
-  LobbyID: 0
-  NetworkManager: {fileID: 1681172640}
-  PanelSwapper: {fileID: 1609109041}
+  lobbyID: 0
+  networkManager: {fileID: 1681172640}
+  panelSwapper: {fileID: 1609109041}
 --- !u!1 &1813059606
 GameObject:
   m_ObjectHideFlags: 0
