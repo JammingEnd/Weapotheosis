@@ -12,125 +12,99 @@ namespace SteamLobbyUI
     {
         public static SteamLobby Instance;
         public GameObject hostButton = null;
-        public ulong LobbyID;
-        public NetworkManager NetworkManager;
-        public PanelSwapper PanelSwapper;
-        
+        public ulong lobbyID;
+        public NetworkManager networkManager;
+        public PanelSwapper panelSwapper;
         protected Callback<LobbyCreated_t> lobbyCreated;
-        protected Callback<GameLobbyJoinRequested_t> lobbyJoinRequested;
+        protected Callback<GameLobbyJoinRequested_t> gameLobbyJoinRequested;
         protected Callback<LobbyEnter_t> lobbyEntered;
         protected Callback<LobbyChatUpdate_t> lobbyChatUpdate;
-        
+
         private const string HostAddressKey = "HostAddress";
-        
-        
-        private void Awake()
+
+        void Awake()
         {
-            if (Instance == null)       
+            if (Instance == null)
             {
-                Instance = this;     
+                Instance = this;
             }
-            else
+            else if (Instance != this)
             {
-                Destroy(gameObject);     
+                Destroy(gameObject);
+                return;
             }
         }
 
-        private void Start()
+        void Start()
         {
-            NetworkManager = GetComponent<NetworkManager>();
+            networkManager = GetComponent<NetworkManager>();
             if (!SteamManager.Initialized)
             {
-                Debug.LogWarning("Steam lobby not initialized");
+                Debug.LogError("Steam is not initalized. Make sure to run this game in the steam environment");
                 return;
             }
-            PanelSwapper.gameObject.SetActive(true);
+            panelSwapper.gameObject.SetActive(true);
             lobbyCreated = Callback<LobbyCreated_t>.Create(OnLobbyCreated);
-            lobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(OnGameLobbyJoinRequested);
+            gameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(OnGameLobbyJoinRequested);
             lobbyEntered = Callback<LobbyEnter_t>.Create(OnLobbyEntered);
             lobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(OnLobbyChatUpdate);
         }
-        private void OnLobbyCreated(LobbyCreated_t param)
+
+        public void HostLobby()
         {
-            if(param.m_eResult != EResult.k_EResultOK)
+            SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, networkManager.maxConnections);
+        }
+
+        void OnLobbyCreated(LobbyCreated_t callback)
+        {
+            if (callback.m_eResult != EResult.k_EResultOK)
             {
-                Debug.LogError("Lobby creation failed");
+                Debug.LogError("Failed to create lobby: " + callback.m_eResult);
                 return;
             }
-            Debug.Log("Lobby created. Lobby ID: " + param.m_ulSteamIDLobby);
-            NetworkManager.StartHost();
-            
-            SteamMatchmaking.SetLobbyData(new  CSteamID(param.m_ulSteamIDLobby), HostAddressKey, SteamUser.GetSteamID().ToString());
-            LobbyID = param.m_ulSteamIDLobby;
+
+            Debug.Log("Lobby successfully created. Lobby ID: " + callback.m_ulSteamIDLobby);
+            networkManager.StartHost();
+
+            SteamMatchmaking.SetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), HostAddressKey, SteamUser.GetSteamID().ToString());
+            lobbyID = callback.m_ulSteamIDLobby;
         }
-        private void OnGameLobbyJoinRequested(GameLobbyJoinRequested_t param)
+
+        void OnGameLobbyJoinRequested(GameLobbyJoinRequested_t callback)
         {
-            Debug.Log("Join request received for lobby: " + param.m_steamIDLobby);
-            if (NetworkClient.active || NetworkClient.isConnected)
+            Debug.Log("Join request received for lobby: " + callback.m_steamIDLobby);
+
+            if (NetworkClient.isConnected || NetworkClient.active)
             {
-                Debug.Log("Already in a lobby, cannot join another.");
-                NetworkManager.singleton.StopHost();
+                Debug.Log("NetworkClient is active or connected. Disconnecting before joining new lobby");
+                NetworkManager.singleton.StopClient();
                 NetworkClient.Shutdown();
+            }
+            SteamMatchmaking.JoinLobby(callback.m_steamIDLobby);
+        }
+
+        void OnLobbyEntered(LobbyEnter_t callback)
+        {
+            if (NetworkServer.active)
+            {
+                Debug.Log("Already in a lobby as a host. Ignorning join request");
                 return;
             }
-            
-            SteamMatchmaking.JoinLobby(param.m_steamIDLobby);
-        }
-        private void OnLobbyEntered(LobbyEnter_t param)
-{
-    // Only join if we’re not the host
-    if (NetworkServer.active)
-    {
-        Debug.Log("Already hosting a lobby.");
-        return;
-    }
-
-    LobbyID = param.m_ulSteamIDLobby;
-    StartCoroutine(ConnectToHost());
-}
-
-    private IEnumerator ConnectToHost()
-    {
-        var lobby = new CSteamID(LobbyID);
-        string hostAddressStr = SteamMatchmaking.GetLobbyData(lobby, HostAddressKey);
-
-        // Wait until lobby data contains the host SteamID
-        float timeout = 5f; // optional max wait
-        float timer = 0f;
-        while (string.IsNullOrEmpty(hostAddressStr) && timer < timeout)
-        {
-            yield return null; // wait a frame
-            timer += Time.deltaTime;
-            hostAddressStr = SteamMatchmaking.GetLobbyData(lobby, HostAddressKey);
+            lobbyID = callback.m_ulSteamIDLobby;
+            string _hostAddress = SteamMatchmaking.GetLobbyData(new CSteamID(callback.m_ulSteamIDLobby), HostAddressKey);
+            networkManager.networkAddress = _hostAddress;
+            Debug.Log("Entered lobby: " + callback.m_ulSteamIDLobby);
+            networkManager.StartClient();
+            panelSwapper.SwapPanel("LobbyPanel");
         }
 
-        if (string.IsNullOrEmpty(hostAddressStr))
+        void OnLobbyChatUpdate(LobbyChatUpdate_t callback)
         {
-            Debug.LogError("Failed to retrieve host SteamID from lobby data!");
-            yield break;
-        }
+            if (callback.m_ulSteamIDLobby != lobbyID) return;
 
-        if (!ulong.TryParse(hostAddressStr, out ulong hostSteamId))
-        {
-            Debug.LogError($"Invalid SteamID format: {hostAddressStr}");
-            yield break;
-        }
-
-        Debug.Log("Connecting to host: " + hostSteamId);
-        NetworkManager.GetComponent<FizzySteamworks>().ClientConnect(hostSteamId.ToString());
-
-        // Optional: swap to lobby panel once connection is initiated
-        PanelSwapper.SwapPanel("Lobby");
-    }
-
-
-        private void OnLobbyChatUpdate(LobbyChatUpdate_t param)
-        {
-            if(param.m_ulSteamIDLobby != LobbyID) return;   
-            
-            EChatMemberStateChange stateChange = (EChatMemberStateChange)param.m_rgfChatMemberStateChange;
+            EChatMemberStateChange stateChange = (EChatMemberStateChange)callback.m_rgfChatMemberStateChange;
             Debug.Log($"LobbyChatUpdate: {stateChange}");
-            
+
             bool shouldUpdate = stateChange.HasFlag(EChatMemberStateChange.k_EChatMemberStateChangeEntered) ||
                                 stateChange.HasFlag(EChatMemberStateChange.k_EChatMemberStateChangeLeft) ||
                                 stateChange.HasFlag(EChatMemberStateChange.k_EChatMemberStateChangeDisconnected) ||
@@ -140,7 +114,7 @@ namespace SteamLobbyUI
             if (shouldUpdate)
             {
                 StartCoroutine(DelayedNameUpdate(0.5f));
-                LobbyUIManager.Instance.CheckAllPlayersReady();
+                LobbyUIManager.Instance?.CheckAllPlayersReady();
             }
         }
 
@@ -148,54 +122,46 @@ namespace SteamLobbyUI
         {
             if (LobbyUIManager.Instance == null)
             {
+                Debug.LogWarning("Lobby UI Manager.Instance is null, skipping name update");
                 yield break;
             }
             yield return new WaitForSeconds(delay);
-            LobbyUIManager.Instance?.UpdatePlayerLobbyUI(); // stack trace
+            LobbyUIManager.Instance?.UpdatePlayerLobbyUI();
         }
 
         public void LeaveLobby()
         {
-            CSteamID currentOwner = SteamMatchmaking.GetLobbyOwner(new CSteamID(LobbyID));
+            CSteamID currentOwner = SteamMatchmaking.GetLobbyOwner(new CSteamID(lobbyID));
             CSteamID me = SteamUser.GetSteamID();
-            var lobby = new CSteamID(LobbyID);
-            List<CSteamID> players = new List<CSteamID>();
-            
+            var lobby = new CSteamID(lobbyID);
+            List<CSteamID> members = new List<CSteamID>();
+
             int count = SteamMatchmaking.GetNumLobbyMembers(lobby);
+
             for (int i = 0; i < count; i++)
             {
-                players.Add(SteamMatchmaking.GetLobbyMemberByIndex(lobby, i));
+                members.Add(SteamMatchmaking.GetLobbyMemberByIndex(lobby, i));
             }
 
-            if (LobbyID != 0)
+            if (lobbyID != 0)
             {
-                SteamMatchmaking.LeaveLobby(new CSteamID(LobbyID));
+                SteamMatchmaking.LeaveLobby(new CSteamID(lobbyID));
+                lobbyID = 0;
             }
-            
-            if(NetworkServer.active && me == currentOwner)
+
+            if (NetworkServer.active && currentOwner == me)
             {
                 NetworkManager.singleton.StopHost();
             }
-            else if(NetworkClient.isConnected)
+            else if (NetworkClient.isConnected)
             {
                 NetworkManager.singleton.StopClient();
             }
-            
-            PanelSwapper.gameObject.SetActive(true);
+
+            panelSwapper.gameObject.SetActive(true);
             this.gameObject.SetActive(true);
-            PanelSwapper.SwapPanel("MainMenu");
-          
+            panelSwapper.SwapPanel("MainPanel");
         }
-
-
-
-
-        public void HostLobby()
-        {
-            SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, NetworkManager.maxConnections);
-        }
-        
-        
     }
 
 }
