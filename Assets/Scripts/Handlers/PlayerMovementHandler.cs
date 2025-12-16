@@ -123,7 +123,11 @@ namespace NetworkHandlers
             }
 
         }
-
+        public override void OnStartServer()
+        {
+            base.OnStartServer();
+            _stats = GetComponent<PlayerStatHandler>();
+        }
         public override void OnStartLocalPlayer()
         {
             inputActions.Player.Enable();
