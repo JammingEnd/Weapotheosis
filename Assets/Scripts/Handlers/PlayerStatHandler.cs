@@ -55,6 +55,8 @@ public class PlayerStatHandler : NetworkBehaviour
         CurrentAmmo = Stats.GunMagazineSize;
     }
 
+    #region BIG STAT METHODS
+    
     private void CopyStats(Stats source, Stats target)
     {
         target.MaxHealth = source.MaxHealth;
@@ -97,5 +99,20 @@ public class PlayerStatHandler : NetworkBehaviour
         target.HasBulletGravity = source.HasBulletGravity;
     }
     
-    private List<BoonEffectSC> activeBoons = new();
+    [Server]
+    public void SetStatValue(StatType type, object value)
+    {
+        var field = typeof(Stats).GetField(type.ToString());
+        if (field == null) throw new Exception($"Stat {type} not found");
+        field.SetValue(Stats, value);
+    }
+    
+    #endregion
+
+    #region Boons
+
+    private List<BoonCardSC> activeBoons = new();
+    
+    #endregion
+    
 } 

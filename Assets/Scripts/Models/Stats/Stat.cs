@@ -5,6 +5,12 @@ using Models.Stats;
 [Serializable]
 public class Stats
 {
+    #region Stats
+
+    
+
+    
+    
     public int MaxHealth;
     public int MaxShield;
     public int MaxStamina;
@@ -44,5 +50,6 @@ public class Stats
     public bool CanRicochet;
     public bool HasBulletGravity;
     
-
+    #endregion
+    
 }
