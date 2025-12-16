@@ -16,7 +16,7 @@ namespace NetworkHandlers
         [Header("Physics")]
         public Rigidbody rb;
         public float moveAcceleration = 30f;
-        public float maxSpeed => (float)_stats.GetStat(StatType.MovementSpeed);
+        public float maxSpeed => _stats.Stats.MovementSpeed;
         public float airControlMultiplier = 0.4f;
         
         private Vector2 movementInput;
@@ -108,11 +108,11 @@ namespace NetworkHandlers
         [Command]
         void CmdJump()
         {
-            if (isGrounded || (_stats.GetStat(StatType.CanDoubleJump) is true && !_hasDoubleJumped))
+            if (isGrounded || _stats.Stats.CanDoubleJump)
             {
                 if (!isGrounded) _hasDoubleJumped = true;
 
-                float jumpForce = (float)_stats.GetStat(StatType.JumpHeight);
+                float jumpForce = _stats.Stats.JumpHeight;
 
                 // Reset vertical velocity to make jumps consistent
                 Vector3 vel = rb.linearVelocity;

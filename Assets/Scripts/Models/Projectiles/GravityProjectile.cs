@@ -13,7 +13,7 @@ public class GravityProjectile : ProjectileMovementHandler
     
     public override void Move()
     {
-        transform.rotation *= Quaternion.Euler(_gravityScale * Time.fixedDeltaTime, 0f, 0f);
+        transform.rotation *= Quaternion.Euler(_gravityScale * Time.fixedDeltaTime * 2f, 0f, 0f);
         base.Move();
     }
 }

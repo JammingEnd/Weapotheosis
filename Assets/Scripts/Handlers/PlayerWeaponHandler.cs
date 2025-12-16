@@ -20,9 +20,9 @@ public class PlayerWeaponHandler : NetworkBehaviour
 
     public int _currentAmmo { get; private set; }
 
-    private float FireRate => _stats != null ? (float)_stats.GetStat(StatType.GunAttackSpeed) : 1f;
-    private int MaxAmmo => _stats != null ? (int)_stats.GetStat(StatType.GunMagazineSize) : 0;
-    private float ReloadTime => _stats != null ? (float)_stats.GetStat(StatType.GunReloadSpeed) : 1f;
+    private float FireRate => _stats.Stats.GunAttackSpeed;
+    private int MaxAmmo => _stats.Stats.GunMagazineSize;
+    private float ReloadTime => _stats.Stats.GunReloadSpeed;
 
     private void Awake()
     {
@@ -93,18 +93,21 @@ public class PlayerWeaponHandler : NetworkBehaviour
         if (_stats == null) return;
 
         GameObject proj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-        proj.GetComponent<ProjectileHitHandler>().Initialize((float)_stats.GetStat(StatType.GunDamage), _stats, ProjectileType.Bullet);
+        proj.GetComponent<ProjectileHitHandler>().Initialize(_stats.Stats.GunDamage, _stats, ProjectileType.Bullet);
         // bullet type
-        if (!(bool)_stats.GetStat(StatType.HasBulletGravity)) { 
+        if (!_stats.Stats.HasBulletGravity) { 
             // normal bullet
             BulletProjectile pmh = proj.AddComponent<BulletProjectile>(); 
-            pmh.Initialize( (float)_stats.GetStat(StatType.GunProjectileSpeed), (float)_stats.GetStat(StatType.GunProjectileLifetime) );
+            pmh.Initialize( _stats.Stats.GunProjectileSpeed, _stats.Stats.GunProjectileLifetime );
             
         } 
-        else if ((bool)_stats.GetStat(StatType.HasBulletGravity)) 
+        else if (_stats.Stats.HasBulletGravity) 
         { 
             GravityProjectile gmh = proj.AddComponent<GravityProjectile>(); 
-            gmh.Initialize( (float)_stats.GetStat(StatType.GunProjectileSpeed), (float)_stats.GetStat(StatType.GunProjectileLifetime), (float)_stats.GetStat(StatType.GravityScale)); 
+            gmh.Initialize( 
+                _stats.Stats.GunProjectileSpeed, 
+                _stats.Stats.GunProjectileLifetime, 
+                _stats.Stats.GravityScale); 
         }
         
         NetworkServer.Spawn(proj);
@@ -151,10 +154,15 @@ public class PlayerWeaponHandler : NetworkBehaviour
         _isReloading = true;
         _isFiring = false;
         
-        StartReload(_currentAmmo <= 0);
+        
 
         float timer = 0f;
         float reloadTime = ReloadTime;
+        if (_currentAmmo <= 0)
+            reloadTime *= 1.5f;
+            
+        StartReload(_currentAmmo <= 0);
+        
         while (timer < reloadTime)
         {
             timer += Time.deltaTime;

@@ -476,10 +476,47 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  BaseStats: {fileID: 11400000, guid: 378fb3807f5b2e85ea833ee641f7a689, type: 2}
+  BaseStats: {fileID: 11400000, guid: 83372ef0d523b26ed91edfa0e2811b2c, type: 2}
+  Stats:
+    MaxHealth: 0
+    MaxShield: 0
+    MaxStamina: 0
+    GunProjectileCount: 0
+    GunMagazineSize: 0
+    HealthRegenRate: 0
+    HealthRegenDelay: 0
+    StaminaRegenRate: 0
+    StaminaRegenDelay: 0
+    ShieldRegenRate: 0
+    ShieldRegenDelay: 0
+    HealthLeechFlat: 0
+    HealthLeechPercent: 0
+    HealthOnKill: 0
+    ShieldOnKill: 0
+    StaminaOnKill: 0
+    HealthOnBlock: 0
+    ShieldOnBlock: 0
+    StaminaOnBlock: 0
+    BlockCooldown: 0
+    BlockDuration: 0
+    MovementSpeed: 0
+    JumpHeight: 0
+    GravityScale: 0
+    CritChance: 0
+    CritDamage: 0
+    GunDamage: 0
+    GunAttackSpeed: 0
+    GunReloadSpeed: 0
+    GunAccuracy: 0
+    GunProjectileSpeed: 0
+    GunProjectileLifetime: 0
+    CanDoubleJump: 0
+    CanSuperSprint: 0
+    CanRicochet: 0
+    HasBulletGravity: 0
   CurrentHealth: 0
-  CurrentShield: 0
   CurrentStamina: 0
+  CurrentShield: 0
   CurrentAmmo: 0
   CurrentReloadProgress: 0
   CurrentReloadNormalized: 0

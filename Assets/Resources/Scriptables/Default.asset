@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ac4a47249f5c0178b0ca3a78e4e3ee7, type: 3}
+  m_Name: Default
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
+  stats:
+    MaxHealth: 100
+    MaxShield: 0
+    MaxStamina: 100
+    GunProjectileCount: 1
+    GunMagazineSize: 20
+    HealthRegenRate: 0
+    HealthRegenDelay: 0
+    StaminaRegenRate: 0
+    StaminaRegenDelay: 0
+    ShieldRegenRate: 0
+    ShieldRegenDelay: 0
+    HealthLeechFlat: 0
+    HealthLeechPercent: 0
+    HealthOnKill: 0
+    ShieldOnKill: 0
+    StaminaOnKill: 0
+    HealthOnBlock: 0
+    ShieldOnBlock: 0
+    StaminaOnBlock: 0
+    BlockCooldown: 0
+    BlockDuration: 0
+    MovementSpeed: 4
+    JumpHeight: 6
+    GravityScale: 9.81
+    CritChance: 0
+    CritDamage: 0
+    GunDamage: 15
+    GunAttackSpeed: 0.2
+    GunReloadSpeed: 1.5
+    GunAccuracy: 0
+    GunProjectileSpeed: 30
+    GunProjectileLifetime: 5
+    CanDoubleJump: 0
+    CanSuperSprint: 0
+    CanRicochet: 0
+    HasBulletGravity: 1
