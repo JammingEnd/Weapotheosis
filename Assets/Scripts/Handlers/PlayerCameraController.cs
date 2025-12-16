@@ -35,23 +35,36 @@ public class PlayerCameraController : NetworkBehaviour
     private void Awake()
     {
         inputActions = new InputSystem_Actions();
+        
+        if (_playerCamera != null)
+            _playerCamera.gameObject.SetActive(false);
     }
     
     private Vector2 lookInput;
 
     public override void OnStartLocalPlayer()
     {
+        base.OnStartLocalPlayer();
+        
         inputActions.Player.Enable();
 
         inputActions.Player.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
         inputActions.Player.Look.canceled += ctx => lookInput = Vector2.zero;
 
-        _playerCamera.gameObject.SetActive(true);
+        if (_playerCamera != null)
+            _playerCamera.gameObject.SetActive(true);
 
-        if (isLocalPlayer)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-        }
         
+        Cursor.lockState = CursorLockMode.Locked;
+        
+        
+    }
+    private void OnDisable()
+    {
+        if (!isLocalPlayer) return;
+
+        inputActions.Player.Look.performed -= ctx => lookInput = ctx.ReadValue<Vector2>();
+        inputActions.Player.Look.canceled -= ctx => lookInput = Vector2.zero;
+        inputActions.Player.Disable();
     }
 }
