@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using Models.Projectiles;
 using Models.Stats;
 using UnityEngine.InputSystem;
 
@@ -11,6 +12,8 @@ public class PlayerWeaponHandler : NetworkBehaviour
     public InputSystem_Actions inputActions;
     public GameObject projectilePrefab;
     public Transform firePoint;
+
+    [SerializeField] private Animator gunAnimator;
 
     float FireRate => (float)_stats.GetStat(StatType.GunAttackSpeed);
     
@@ -75,7 +78,8 @@ public class PlayerWeaponHandler : NetworkBehaviour
     void SpawnProjectile()
     {
         GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-        // projectil type
+        projectile.GetComponent<ProjectileHitHandler>().Initialize((float)_stats.GetStat(StatType.GunDamage), _stats, ProjectileType.Bullet);
+        // projectile type
         if (!(bool)_stats.GetStat(StatType.HasBulletGravity))
         {
             // normal bullet
@@ -103,7 +107,7 @@ public class PlayerWeaponHandler : NetworkBehaviour
     private void OnReload(InputAction.CallbackContext obj)
     {
         if(_isReloading) return;
-        if(_currentCooldown == MaxAmmo) return;
+        if(_currentAmmo == MaxAmmo) return;
 
         StartCoroutine(Reload());
 
@@ -113,10 +117,18 @@ public class PlayerWeaponHandler : NetworkBehaviour
     {
         _isReloading = true;
         _isFiring = false;
+        
+        float reloadTime = ReloadTime;
+        if (_currentAmmo <= 0)
+        {
+            reloadTime *= 1.5f; // longer reload time for empty mags
+        }
+        
+        StartReload(_currentAmmo <= 0);
 
         float timer = 0f;
 
-        while (timer < ReloadTime)
+        while (timer < reloadTime)
         {
             timer += Time.deltaTime;
 
@@ -124,13 +136,13 @@ public class PlayerWeaponHandler : NetworkBehaviour
             _stats.CurrentReloadProgress = timer;
 
             // Optional: for UI bar you can also store normalized value 0 → 1
-            _stats.CurrentReloadNormalized = timer / ReloadTime;
+            _stats.CurrentReloadNormalized = timer / reloadTime;
 
             yield return null; // wait for next frame
         }
 
         // Make sure it's fully reloaded
-        _stats.CurrentReloadProgress = ReloadTime;
+        _stats.CurrentReloadProgress = reloadTime;
         _stats.CurrentReloadNormalized = 1f;
 
         if (isLocalPlayer)
@@ -146,6 +158,12 @@ public class PlayerWeaponHandler : NetworkBehaviour
     {
         _currentAmmo = MaxAmmo;
         _stats.CurrentAmmo = _currentAmmo;
+    }
+
+    [Command]
+    private void StartReload(bool fullReload)
+    {
+        RpcPlayReloadAnimation(fullReload);
     }
 
     public override void OnStartLocalPlayer()
@@ -173,4 +191,23 @@ public class PlayerWeaponHandler : NetworkBehaviour
 
         inputActions.Player.Disable();
     }
+
+    #region animations
+
+    [ClientRpc]
+    void RpcPlayReloadAnimation(bool fullReload)
+    {
+        float baseLength = 1.5f;
+        float reloadSpeedMultiplier = baseLength / ReloadTime;
+        
+        gunAnimator.SetFloat("animSpeed", reloadSpeedMultiplier);
+        
+        if(fullReload)
+            gunAnimator.SetTrigger("ReloadFull");
+        
+        if(!fullReload)
+            gunAnimator.SetTrigger("ReloadPartial");
+    }
+
+    #endregion
 }

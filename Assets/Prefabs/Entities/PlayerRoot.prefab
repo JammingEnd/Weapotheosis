@@ -309,7 +309,7 @@ Transform:
   m_GameObject: {fileID: 5707487892316816352}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.059, y: 0, z: 0.231}
+  m_LocalPosition: {x: -0.059, y: -0.265, z: 0.694}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -477,7 +477,6 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   BaseStats: {fileID: 11400000, guid: 378fb3807f5b2e85ea833ee641f7a689, type: 2}
-  UIHandler: {fileID: 0}
   CurrentHealth: 0
   CurrentShield: 0
   CurrentStamina: 0
@@ -501,6 +500,7 @@ MonoBehaviour:
   syncInterval: 0
   projectilePrefab: {fileID: 4466945799964546603, guid: 477d46aaa911c1818b03e5670d1e24c6, type: 3}
   firePoint: {fileID: 2954604730467300675}
+  gunAnimator: {fileID: 2641255877713050798}
 --- !u!114 &5356779964733840522
 MonoBehaviour:
   m_ObjectHideFlags: 0
