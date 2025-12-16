@@ -9,7 +9,6 @@ using Unity.VisualScripting;
 public class PlayerStatHandler : NetworkBehaviour
 {
     public PlayerStats BaseStats;
-    public PlayerUIHandler UIHandler;
 
     private Dictionary<StatType, FloatStatEntry> FloatStats = new Dictionary<StatType, FloatStatEntry>();
     private Dictionary<StatType, IntStatEntry> IntStats = new Dictionary<StatType, IntStatEntry>();
@@ -38,6 +37,12 @@ public class PlayerStatHandler : NetworkBehaviour
         InitializeStats();
     }
 
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+        PlayerUIHandler.instance.Initialize(this);
+    }
+
     [Server]
     public void InitializeStats()
     {
@@ -51,6 +56,8 @@ public class PlayerStatHandler : NetworkBehaviour
         
         CurrentHealth = (int)(IntStats[StatType.MaxHealth].value);
         CurrentShield = (int)(IntStats[StatType.MaxShield].value);
+        CurrentAmmo = (int)(IntStats[StatType.GunMagazineSize].value);
+        CurrentStamina = (int)(IntStats[StatType.MaxStamina].value);
     }
   
 } 

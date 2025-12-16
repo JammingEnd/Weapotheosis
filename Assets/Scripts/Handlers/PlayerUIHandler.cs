@@ -8,6 +8,20 @@ using Models.Stats;
 
 public class PlayerUIHandler : MonoBehaviour
 {
+   public static  PlayerUIHandler instance;
+
+   private void Awake()
+   {
+      if (instance == null)
+      {
+         instance = this;
+      }
+      else
+      {
+         Destroy(gameObject);
+      }
+   }
+
    public Canvas playerCanvas;
 
    public TextMeshProUGUI playerName;
@@ -34,6 +48,12 @@ public class PlayerUIHandler : MonoBehaviour
       playerAmmoCounter.text = $"{_stats.CurrentAmmo}/{_stats.GetStat(StatType.GunMagazineSize)}";
       playerStamina.text = $"{_stats.CurrentStamina}/{_stats.GetStat(StatType.MaxStamina)}";
 
+      if (_stats.CurrentReloadNormalized == 1)
+      {
+         ReloadProgressBar.fillAmount = 0f;
+         return;
+      } 
+      
       ReloadProgressBar.fillAmount = _stats.CurrentReloadNormalized;
       
    }

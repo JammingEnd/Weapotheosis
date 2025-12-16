@@ -145,6 +145,7 @@ public class PlayerWeaponHandler : NetworkBehaviour
     private void CmdReload()
     {
         _currentAmmo = MaxAmmo;
+        _stats.CurrentAmmo = _currentAmmo;
     }
 
     public override void OnStartLocalPlayer()
