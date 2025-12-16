@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using Models.Projectiles;
@@ -12,150 +10,110 @@ public class PlayerWeaponHandler : NetworkBehaviour
     public InputSystem_Actions inputActions;
     public GameObject projectilePrefab;
     public Transform firePoint;
-
     [SerializeField] private Animator gunAnimator;
 
-    float FireRate => (float)_stats.GetStat(StatType.GunAttackSpeed);
-    
-    private float _currentCooldown;
     private PlayerStatHandler _stats;
-
-    private int MaxAmmo => (int)_stats.GetStat(StatType.GunMagazineSize);
-    public int _currentAmmo { get; private set; }
-    
-    private float ReloadTime => (float)_stats.GetStat(StatType.GunReloadSpeed);
-    private bool _isReloading = false;
-
+    private float _currentCooldown;
+    private bool _isReloading;
     private bool _isFiring;
+    private double _nextServerFireTime;
+
+    public int _currentAmmo { get; private set; }
+
+    private float FireRate => _stats != null ? (float)_stats.GetStat(StatType.GunAttackSpeed) : 1f;
+    private int MaxAmmo => _stats != null ? (int)_stats.GetStat(StatType.GunMagazineSize) : 0;
+    private float ReloadTime => _stats != null ? (float)_stats.GetStat(StatType.GunReloadSpeed) : 1f;
+
     private void Awake()
     {
         inputActions = new InputSystem_Actions();
     }
-    
-    private void FixedUpdate()
-    {
-        if (!isLocalPlayer) return;
 
-        if (_currentCooldown > 0f)
-            _currentCooldown -= Time.fixedDeltaTime;
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        _stats = GetComponent<PlayerStatHandler>();
     }
 
-    [Client]
+    public override void OnStartLocalPlayer()
+    {
+        inputActions.Player.Enable();
+
+        inputActions.Player.Attack.started += _ => _isFiring = true;
+        inputActions.Player.Attack.canceled += _ => _isFiring = false;
+        inputActions.Player.Reload.performed += OnReload;
+        inputActions.Player.Aim.performed += ctx => { /* handle aim */ };
+
+        if (_stats != null)
+            CmdReload();
+    }
+
+    private void OnDisable()
+    {
+        if (!isLocalPlayer) return;
+        inputActions.Player.Disable();
+    }
+
     private void Update()
     {
         if (!isLocalPlayer) return;
-
         if (_isFiring && _currentCooldown <= 0f)
         {
             _currentCooldown = FireRate;
             CmdFire();
         }
     }
-    private double _nextServerFireTime;
+
+    private void FixedUpdate()
+    {
+        if (!isLocalPlayer) return;
+        if (_currentCooldown > 0f)
+            _currentCooldown -= Time.fixedDeltaTime;
+    }
 
     [Command]
     private void CmdFire()
     {
-        
-        if(_isReloading) return;
-        if(_currentAmmo <= 0)
+        if (_isReloading || _currentAmmo <= 0 || _stats == null)
             return;
-        
+
         _currentAmmo--;
         _stats.CurrentAmmo = _currentAmmo;
-        
-        double now = NetworkTime.time;
-        float fireInterval = FireRate;
 
+        double now = NetworkTime.time;
         if (now < _nextServerFireTime)
             return;
 
-        _nextServerFireTime = now + fireInterval;
-
+        _nextServerFireTime = now + FireRate;
         SpawnProjectile();
     }
-    
-    void SpawnProjectile()
+
+    private void SpawnProjectile()
     {
-        GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-        projectile.GetComponent<ProjectileHitHandler>().Initialize((float)_stats.GetStat(StatType.GunDamage), _stats, ProjectileType.Bullet);
-        // projectile type
-        if (!(bool)_stats.GetStat(StatType.HasBulletGravity))
-        {
+        if (_stats == null) return;
+
+        GameObject proj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        proj.GetComponent<ProjectileHitHandler>().Initialize((float)_stats.GetStat(StatType.GunDamage), _stats, ProjectileType.Bullet);
+        // bullet type
+        if (!(bool)_stats.GetStat(StatType.HasBulletGravity)) { 
             // normal bullet
-            BulletProjectile pmh = projectile.AddComponent<BulletProjectile>();
-            pmh.Initialize(
-                (float)_stats.GetStat(StatType.GunProjectileSpeed),
-                (float)_stats.GetStat(StatType.GunProjectileLifetime)
-            );
-        }
-        else if ((bool)_stats.GetStat(StatType.HasBulletGravity))
-        {
-            GravityProjectile gmh = projectile.AddComponent<GravityProjectile>();
-            gmh.Initialize(
-                (float)_stats.GetStat(StatType.GunProjectileSpeed),
-                (float)_stats.GetStat(StatType.GunProjectileLifetime),
-                (float)_stats.GetStat(StatType.GravityScale));
-        }
-        NetworkServer.Spawn(projectile);
-    }
-    
-    private void OnAim(InputAction.CallbackContext ctx)
-    {
-        Debug.Log("Aim");
-    }
-    private void OnReload(InputAction.CallbackContext obj)
-    {
-        if(_isReloading) return;
-        if(_currentAmmo == MaxAmmo) return;
-
-        StartCoroutine(Reload());
-
-    }
-
-    private IEnumerator Reload()
-    {
-        _isReloading = true;
-        _isFiring = false;
-        
-        float reloadTime = ReloadTime;
-        if (_currentAmmo <= 0)
-        {
-            reloadTime *= 1.5f; // longer reload time for empty mags
+            BulletProjectile pmh = proj.AddComponent<BulletProjectile>(); 
+            pmh.Initialize( (float)_stats.GetStat(StatType.GunProjectileSpeed), (float)_stats.GetStat(StatType.GunProjectileLifetime) );
+            
+        } 
+        else if ((bool)_stats.GetStat(StatType.HasBulletGravity)) 
+        { 
+            GravityProjectile gmh = proj.AddComponent<GravityProjectile>(); 
+            gmh.Initialize( (float)_stats.GetStat(StatType.GunProjectileSpeed), (float)_stats.GetStat(StatType.GunProjectileLifetime), (float)_stats.GetStat(StatType.GravityScale)); 
         }
         
-        StartReload(_currentAmmo <= 0);
-
-        float timer = 0f;
-
-        while (timer < reloadTime)
-        {
-            timer += Time.deltaTime;
-
-            // Update reload progress (0 → ReloadTime)
-            _stats.CurrentReloadProgress = timer;
-
-            // Optional: for UI bar you can also store normalized value 0 → 1
-            _stats.CurrentReloadNormalized = timer / reloadTime;
-
-            yield return null; // wait for next frame
-        }
-
-        // Make sure it's fully reloaded
-        _stats.CurrentReloadProgress = reloadTime;
-        _stats.CurrentReloadNormalized = 1f;
-
-        if (isLocalPlayer)
-            CmdReload();
-
-        _isReloading = false;
-        _isFiring = false;
+        NetworkServer.Spawn(proj);
     }
 
-    
     [Command]
     private void CmdReload()
     {
+        if (_stats == null) return;
         _currentAmmo = MaxAmmo;
         _stats.CurrentAmmo = _currentAmmo;
     }
@@ -166,54 +124,58 @@ public class PlayerWeaponHandler : NetworkBehaviour
         RpcPlayReloadAnimation(fullReload);
     }
 
-    public override void OnStartServer()
-    {
-        base.OnStartServer();
-        _stats = GetComponent<PlayerStatHandler>();
-    }
-
-    public override void OnStartLocalPlayer()
-    {
-        inputActions.Player.Enable();
-        
-        inputActions.Player.Attack.started += _ => _isFiring = true;
-        inputActions.Player.Attack.canceled += _ => _isFiring = false;
-        inputActions.Player.Aim.performed += OnAim;
-        inputActions.Player.Reload.performed += OnReload;
-        
-        _stats = GetComponent<PlayerStatHandler>();
-        
-        CmdReload();
-    }
-
-
-    private void OnDisable()
-    {
-        if (!isLocalPlayer) return;
-
-        inputActions.Player.Attack.started -= _ => _isFiring = true;
-        inputActions.Player.Attack.canceled -= _ => _isFiring = false;
-        inputActions.Player.Aim.performed -= OnAim;
-
-        inputActions.Player.Disable();
-    }
-
-    #region animations
-
     [ClientRpc]
-    void RpcPlayReloadAnimation(bool fullReload)
+    private void RpcPlayReloadAnimation(bool fullReload)
     {
-        float baseLength = 1.5f;
-        float reloadSpeedMultiplier = baseLength / ReloadTime;
-        
+        if (_stats == null) return;
+
+        float reloadSpeedMultiplier = 1.5f / ReloadTime;
         gunAnimator.SetFloat("animSpeed", reloadSpeedMultiplier);
-        
-        if(fullReload)
+
+        if (fullReload)
             gunAnimator.SetTrigger("ReloadFull");
-        
-        if(!fullReload)
+        else
             gunAnimator.SetTrigger("ReloadPartial");
     }
 
-    #endregion
+    private void OnReload(InputAction.CallbackContext ctx)
+    {
+        if (_isReloading || _currentAmmo >= MaxAmmo) return;
+        StartCoroutine(ReloadCoroutine());
+    }
+    
+    
+
+    private IEnumerator ReloadCoroutine()
+    {
+        _isReloading = true;
+        _isFiring = false;
+        
+        StartReload(_currentAmmo <= 0);
+
+        float timer = 0f;
+        float reloadTime = ReloadTime;
+        while (timer < reloadTime)
+        {
+            timer += Time.deltaTime;
+            if (_stats != null)
+            {
+                _stats.CurrentReloadProgress = timer;
+                _stats.CurrentReloadNormalized = timer / reloadTime;
+            }
+            yield return null;
+        }
+
+        if (_stats != null)
+        {
+            _stats.CurrentReloadProgress = reloadTime;
+            _stats.CurrentReloadNormalized = 1f;
+        }
+
+        if (isLocalPlayer)
+            CmdReload();
+
+        _isReloading = false;
+        _isFiring = false;
+    }
 }
