@@ -95,7 +95,7 @@ namespace SteamLobbyUI
             networkManager.networkAddress = _hostAddress;
             Debug.Log("Entered lobby: " + callback.m_ulSteamIDLobby);
             networkManager.StartClient();
-            panelSwapper.SwapPanel("LobbyPanel");
+            panelSwapper.SwapPanel("Lobby");
         }
 
         void OnLobbyChatUpdate(LobbyChatUpdate_t callback)
@@ -160,7 +160,7 @@ namespace SteamLobbyUI
 
             panelSwapper.gameObject.SetActive(true);
             this.gameObject.SetActive(true);
-            panelSwapper.SwapPanel("MainPanel");
+            panelSwapper.SwapPanel("MainMenu");
         }
     }
 
