@@ -9,6 +9,7 @@ using Unity.VisualScripting;
 public class PlayerStatHandler : NetworkBehaviour
 {
     public PlayerStats BaseStats;
+    public PlayerUIHandler UIHandler;
 
     private Dictionary<StatType, FloatStatEntry> FloatStats = new Dictionary<StatType, FloatStatEntry>();
     private Dictionary<StatType, IntStatEntry> IntStats = new Dictionary<StatType, IntStatEntry>();
@@ -27,7 +28,10 @@ public class PlayerStatHandler : NetworkBehaviour
     
     [SyncVar] public int CurrentHealth;
     [SyncVar] public int CurrentShield;
-
+    [SyncVar] public int CurrentStamina;
+    [SyncVar] public int CurrentAmmo;
+    [SyncVar] public float CurrentReloadProgress;
+    [SyncVar] public float CurrentReloadNormalized;
 
     public override void OnStartServer()
     {

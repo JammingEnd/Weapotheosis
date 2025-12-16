@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-
+[RequireComponent(typeof(NetworkIdentity))]
+[RequireComponent(typeof(NetworkTransformReliable))]
 public class ProjectileMovementHandler : NetworkBehaviour
 {
     [SyncVar] protected float _projectileSpeed;

@@ -40,6 +40,7 @@ namespace Models.Stats
         CanDoubleJump,
         CanSuperSprint,
         CanRicochet,
+        HasBulletGravity,
     }
 
     public class StatModifier
