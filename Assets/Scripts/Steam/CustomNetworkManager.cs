@@ -114,19 +114,6 @@ public class CustomNetworkManager : NetworkManager
     /// <param name="sceneName">The name of the new scene.</param>
     public override void OnServerSceneChanged(string sceneName)
     {
-        if (sceneName == "Map1")
-        {
-            foreach (var conn in NetworkServer.connections.Values)
-            {
-                if (conn.identity != null)
-                {
-                    NetworkServer.Destroy(conn.identity.gameObject);
-                }
-
-                GameObject player = Instantiate(playerPrefab);
-                NetworkServer.AddPlayerForConnection(conn, player);
-            }
-        }
     }
 
     /// <summary>
