@@ -77,51 +77,51 @@ namespace SteamLobbyUI
             SteamMatchmaking.JoinLobby(param.m_steamIDLobby);
         }
         private void OnLobbyEntered(LobbyEnter_t param)
-        {
-            // Only join if we’re not the host
-            if (NetworkServer.active)
-            {
-                Debug.Log("Already hosting a lobby.");
-                return;
-            }
+{
+    // Only join if we’re not the host
+    if (NetworkServer.active)
+    {
+        Debug.Log("Already hosting a lobby.");
+        return;
+    }
 
-            LobbyID = param.m_ulSteamIDLobby;
-            StartCoroutine(ConnectToHost());
-        }
+    LobbyID = param.m_ulSteamIDLobby;
+    StartCoroutine(ConnectToHost());
+}
 
-        private IEnumerator ConnectToHost()
-        {
-            var lobby = new CSteamID(LobbyID);
-            string hostAddressStr = SteamMatchmaking.GetLobbyData(lobby, HostAddressKey);
+private IEnumerator ConnectToHost()
+{
+    var lobby = new CSteamID(LobbyID);
+    string hostAddressStr = SteamMatchmaking.GetLobbyData(lobby, HostAddressKey);
 
-            // Wait until lobby data contains the host SteamID
-            float timeout = 5f; // optional max wait
-            float timer = 0f;
-            while (string.IsNullOrEmpty(hostAddressStr) && timer < timeout)
-            {
-                yield return null; // wait a frame
-                timer += Time.deltaTime;
-                hostAddressStr = SteamMatchmaking.GetLobbyData(lobby, HostAddressKey);
-            }
+    // Wait until lobby data contains the host SteamID
+    float timeout = 5f; // optional max wait
+    float timer = 0f;
+    while (string.IsNullOrEmpty(hostAddressStr) && timer < timeout)
+    {
+        yield return null; // wait a frame
+        timer += Time.deltaTime;
+        hostAddressStr = SteamMatchmaking.GetLobbyData(lobby, HostAddressKey);
+    }
 
-            if (string.IsNullOrEmpty(hostAddressStr))
-            {
-                Debug.LogError("Failed to retrieve host SteamID from lobby data!");
-                yield break;
-            }
+    if (string.IsNullOrEmpty(hostAddressStr))
+    {
+        Debug.LogError("Failed to retrieve host SteamID from lobby data!");
+        yield break;
+    }
 
-            if (!ulong.TryParse(hostAddressStr, out ulong hostSteamId))
-            {
-                Debug.LogError($"Invalid SteamID format: {hostAddressStr}");
-                yield break;
-            }
+    if (!ulong.TryParse(hostAddressStr, out ulong hostSteamId))
+    {
+        Debug.LogError($"Invalid SteamID format: {hostAddressStr}");
+        yield break;
+    }
 
-            Debug.Log("Connecting to host: " + hostSteamId);
-            NetworkManager.GetComponent<FizzySteamworks>().ClientConnect(hostSteamId.ToString());
+    Debug.Log("Connecting to host: " + hostSteamId);
+    NetworkManager.GetComponent<FizzySteamworks>().ClientConnect(hostSteamId.ToString());
 
-            // Optional: swap to lobby panel once connection is initiated
-            PanelSwapper.SwapPanel("Lobby");
-        }
+    // Optional: swap to lobby panel once connection is initiated
+    PanelSwapper.SwapPanel("Lobby");
+}
 
 
         private void OnLobbyChatUpdate(LobbyChatUpdate_t param)
