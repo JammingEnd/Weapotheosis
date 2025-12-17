@@ -8,6 +8,7 @@ using Mirror;
 public class PlayerCameraController : NetworkBehaviour
 {
     public Camera _playerCamera;
+    public Transform playercamRoot;
     
     private InputSystem_Actions inputActions;
 
@@ -36,8 +37,8 @@ public class PlayerCameraController : NetworkBehaviour
     {
         inputActions = new InputSystem_Actions();
         
-        if (_playerCamera != null)
-            _playerCamera.gameObject.SetActive(false);
+        if (playercamRoot != null)
+            playercamRoot.gameObject.SetActive(false);
     }
     
     private Vector2 lookInput;
@@ -51,8 +52,8 @@ public class PlayerCameraController : NetworkBehaviour
         inputActions.Player.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
         inputActions.Player.Look.canceled += ctx => lookInput = Vector2.zero;
 
-        if (_playerCamera != null)
-            _playerCamera.gameObject.SetActive(true);
+        if (playercamRoot != null)
+            playercamRoot.gameObject.SetActive(true);
 
         
         Cursor.lockState = CursorLockMode.Locked;
