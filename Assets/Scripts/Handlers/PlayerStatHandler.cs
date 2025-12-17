@@ -10,8 +10,11 @@ using Unity.VisualScripting;
 
 public class PlayerStatHandler : NetworkBehaviour
 {
+    [SyncVar] public bool Initialized;
+    
     public PlayerStats BaseStats;
 
+    
     #region Stats
     
     public readonly SyncDictionary<StatType, Stat> Stats = new SyncDictionary<StatType, Stat>();
@@ -120,6 +123,8 @@ public class PlayerStatHandler : NetworkBehaviour
         CurrentStamina = Stats[StatType.MaxStamina].GetStatValueInt();
         CurrentShield = Stats[StatType.MaxShield].GetStatValueInt();
         CurrentAmmo = Stats[StatType.GunMagazineSize].GetStatValueInt();
+        
+        Initialized = true;
     }
     #endregion
 

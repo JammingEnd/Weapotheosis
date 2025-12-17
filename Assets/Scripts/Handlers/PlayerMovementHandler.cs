@@ -27,19 +27,13 @@ namespace NetworkHandlers
         {
             inputActions = new InputSystem_Actions();
         }
-
-        private void Update()
-        {
-            if (!isLocalPlayer) return;
-
-            CmdSetMoveInput(movementInput);
-        }
         
         [ServerCallback]
         private void FixedUpdate()
         {
             
             if (!isServer) return;
+            
             CheckGrounded();
             Move();
         }
@@ -77,6 +71,8 @@ namespace NetworkHandlers
         [Server]
         void Move()
         {
+            if(_stats == null || !_stats.Initialized) return;
+            
             Vector3 wishDir = transform.TransformDirection(
                 new Vector3(movementInput.x, 0, movementInput.y)
             );
@@ -108,7 +104,7 @@ namespace NetworkHandlers
         [Command]
         void CmdJump()
         {
-            if (isGrounded || _stats.GetStat(StatType.CanDoubleJump, out bool hasDoubleJump))
+            if (isGrounded || _stats.GetStatValue<bool>(StatType.CanDoubleJump))
             {
                 if (!isGrounded) _hasDoubleJumped = true;
 
@@ -130,6 +126,7 @@ namespace NetworkHandlers
         }
         public override void OnStartLocalPlayer()
         {
+            base.OnStartLocalPlayer();
             inputActions.Player.Enable();
 
             inputActions.Player.Move.performed += OnMove;
@@ -149,7 +146,10 @@ namespace NetworkHandlers
 
         private void OnMove(InputAction.CallbackContext ctx)
         {
+            if (!isLocalPlayer) return;
+
             movementInput = ctx.ReadValue<Vector2>();
+            CmdSetMoveInput(movementInput);
         }
         
     }
