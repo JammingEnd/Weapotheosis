@@ -46,9 +46,9 @@ public class PlayerUIHandler : MonoBehaviour
    {
       if(_stats == null) return;
       
-      playerHealth.text = $"{_stats.CurrentHealth + _stats.CurrentShield}/{_stats.Stats.MaxHealth}";
-      playerAmmoCounter.text = $"{_stats.CurrentAmmo}/{_stats.Stats.GunMagazineSize}";
-      playerStamina.text = $"{_stats.CurrentStamina}/{_stats.Stats.MaxStamina}";
+      playerHealth.text = $"{_stats.CurrentHealth + _stats.CurrentShield}/{_stats.GetStatValue<int>(StatType.MaxHealth)}";
+      playerAmmoCounter.text = $"{_stats.CurrentAmmo}/{_stats.GetStatValue<int>(StatType.GunMagazineSize)}";
+      playerStamina.text = $"{_stats.CurrentStamina}/{_stats.GetStatValue<int>(StatType.MaxStamina)}";
 
       if (_stats.CurrentReloadNormalized == 1)
       {

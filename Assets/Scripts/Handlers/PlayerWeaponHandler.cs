@@ -20,9 +20,9 @@ public class PlayerWeaponHandler : NetworkBehaviour
 
     public int _currentAmmo { get; private set; }
 
-    private float FireRate => _stats.Stats.GunAttackSpeed;
-    private int MaxAmmo => _stats.Stats.GunMagazineSize;
-    private float ReloadTime => _stats.Stats.GunReloadSpeed;
+    private float FireRate => _stats.GetStatValue<float>(StatType.GunAttackSpeed);
+    private int MaxAmmo => _stats.GetStatValue<int>(StatType.GunMagazineSize);
+    private float ReloadTime => _stats.GetStatValue<float>(StatType.GunReloadSpeed);
 
     private void Awake()
     {
@@ -93,23 +93,26 @@ public class PlayerWeaponHandler : NetworkBehaviour
         if (_stats == null) return;
 
         GameObject proj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-        proj.GetComponent<ProjectileHitHandler>().Initialize(_stats.Stats.GunDamage, _stats, ProjectileType.Bullet);
+        proj.GetComponent<ProjectileHitHandler>().Initialize(_stats.GetStatValue<float>(StatType.GunDamage), _stats, ProjectileType.Bullet);
         // bullet type
-        if (!_stats.Stats.HasBulletGravity) { 
-            // normal bullet
-            BulletProjectile pmh = proj.AddComponent<BulletProjectile>(); 
-            pmh.Initialize( _stats.Stats.GunProjectileSpeed, _stats.Stats.GunProjectileLifetime );
+        if (_stats.GetStat(StatType.HasBulletGravity, out bool hasGravity)) {
+            if (!hasGravity)
+            {
+                // normal bullet
+                BulletProjectile pmh = proj.AddComponent<BulletProjectile>(); 
+                pmh.Initialize( _stats.GetStatValue<float>(StatType.GunProjectileSpeed), _stats.GetStatValue<float>(StatType.GunProjectileLifetime));
+                
+            }
+            else
+            {
+                GravityProjectile gmh = proj.AddComponent<GravityProjectile>(); 
+                gmh.Initialize( 
+                    _stats.GetStatValue<float>(StatType.GunProjectileSpeed), 
+                    _stats.GetStatValue<float>(StatType.GunProjectileLifetime),
+                    _stats.GetStatValue<float>(StatType.GravityScale)); 
+            }
             
         } 
-        else if (_stats.Stats.HasBulletGravity) 
-        { 
-            GravityProjectile gmh = proj.AddComponent<GravityProjectile>(); 
-            gmh.Initialize( 
-                _stats.Stats.GunProjectileSpeed, 
-                _stats.Stats.GunProjectileLifetime, 
-                _stats.Stats.GravityScale); 
-        }
-        
         NetworkServer.Spawn(proj);
     }
 

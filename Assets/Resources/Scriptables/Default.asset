@@ -12,40 +12,75 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ac4a47249f5c0178b0ca3a78e4e3ee7, type: 3}
   m_Name: Default
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
-  stats:
-    MaxHealth: 100
-    MaxShield: 0
-    MaxStamina: 100
-    GunProjectileCount: 1
-    GunMagazineSize: 20
-    HealthRegenRate: 0
-    HealthRegenDelay: 0
-    StaminaRegenRate: 0
-    StaminaRegenDelay: 0
-    ShieldRegenRate: 0
-    ShieldRegenDelay: 0
-    HealthLeechFlat: 0
-    HealthLeechPercent: 0
-    HealthOnKill: 0
-    ShieldOnKill: 0
-    StaminaOnKill: 0
-    HealthOnBlock: 0
-    ShieldOnBlock: 0
-    StaminaOnBlock: 0
-    BlockCooldown: 0
-    BlockDuration: 0
-    MovementSpeed: 4
-    JumpHeight: 6
-    GravityScale: 9.81
-    CritChance: 0
-    CritDamage: 0
-    GunDamage: 15
-    GunAttackSpeed: 0.2
-    GunReloadSpeed: 1.5
-    GunAccuracy: 0
-    GunProjectileSpeed: 30
-    GunProjectileLifetime: 5
-    CanDoubleJump: 0
-    CanSuperSprint: 0
-    CanRicochet: 0
-    HasBulletGravity: 1
+  Stats:
+    _serializedList:
+    - Key: 0
+      Value: 0
+    - Key: 1
+      Value: 0
+    - Key: 2
+      Value: 0
+    - Key: 3
+      Value: 0
+    - Key: 4
+      Value: 0
+    - Key: 5
+      Value: 0
+    - Key: 6
+      Value: 0
+    - Key: 7
+      Value: 0
+    - Key: 8
+      Value: 0
+    - Key: 9
+      Value: 0
+    - Key: 10
+      Value: 0
+    - Key: 11
+      Value: 0
+    - Key: 12
+      Value: 0
+    - Key: 13
+      Value: 4
+    - Key: 14
+      Value: 6
+    - Key: 15
+      Value: 9.81
+    - Key: 16
+      Value: 0
+    - Key: 17
+      Value: 0
+    - Key: 18
+      Value: 0
+    - Key: 19
+      Value: 0
+    - Key: 20
+      Value: 15
+    - Key: 21
+      Value: 0.2
+    - Key: 22
+      Value: 1.5
+    - Key: 23
+      Value: 20
+    - Key: 24
+      Value: 0
+    - Key: 25
+      Value: 30
+    - Key: 26
+      Value: 3
+    - Key: 27
+      Value: 100
+    - Key: 28
+      Value: 0
+    - Key: 29
+      Value: 100
+    - Key: 30
+      Value: 1
+    - Key: 31
+      Value: 0
+    - Key: 32
+      Value: 0
+    - Key: 33
+      Value: 0
+    - Key: 34
+      Value: 0

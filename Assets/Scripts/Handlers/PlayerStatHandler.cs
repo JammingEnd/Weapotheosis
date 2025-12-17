@@ -14,8 +14,8 @@ public class PlayerStatHandler : NetworkBehaviour
 
     #region Stats
     
-    [SyncVar] public Stats Stats;
- 
+    public readonly SyncDictionary<StatType, Stat> Stats = new SyncDictionary<StatType, Stat>();
+
     [SyncVar] public int CurrentHealth;
     [SyncVar] public int CurrentStamina;
     [SyncVar] public int CurrentShield;
@@ -23,13 +23,110 @@ public class PlayerStatHandler : NetworkBehaviour
     [SyncVar] public float CurrentReloadProgress;
     [SyncVar] public float CurrentReloadNormalized;
     
+    public bool GetStat(StatType stat, out float value)
+    {
+        if (Stats.TryGetValue(stat, out Stat statValue))
+        {
+            value = statValue.GetStatValueFloat();
+            return true;
+        }
+        value = 0;
+        return false;
+    }
+    public bool GetStat(StatType stat, out int value)
+    {
+        if (Stats.TryGetValue(stat, out Stat statValue))
+        {
+            value = statValue.GetStatValueInt();
+            return true;
+        }
+        value = 0;
+        return false;
+    }
+    public bool GetStat(StatType stat, out bool value)
+    {
+        if (Stats.TryGetValue(stat, out Stat statValue))
+        {
+            value = statValue.GetStatValueBool();
+            return true;
+        }
+        value = false;
+        return false;
+    }
 
+    public T GetStatValue<T>(StatType stat)
+    {
+        if (Stats.TryGetValue(stat, out Stat statValue))
+        {
+            if (typeof(T) == typeof(int))
+            {
+                return (T)(object)statValue.GetStatValueInt();
+            }
+            else if (typeof(T) == typeof(float))
+            {
+                return (T)(object)statValue.GetStatValueFloat();
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                return (T)(object)statValue.GetStatValueBool();
+            }
+        }
+        return default;
+    }
+
+    public bool HasStat(StatType stat)
+    {
+        if (Stats.TryGetValue(stat, out Stat statValue))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    [Server]
+    public void ModifyStat(StatType stat, float amount, IncrementTypes type)
+    {
+        if (Stats.ContainsKey(stat))
+        {
+            switch (type)
+            {
+                case IncrementTypes.Flat:
+                    Stats[stat].ModifyFlat(amount);
+                    break;
+                case IncrementTypes.Percentage:
+                    Stats[stat].ModifyMultiplier(amount);
+                    break;
+                case IncrementTypes.Override:
+                    Stats[stat].Value = amount;
+                    break;
+            }
+        }
+    }
+
+    [Server]
+    public void InitializeStats()
+    {
+        Stats.Clear();
+        foreach (var pair in BaseStats.Stats)
+        {
+            Stats[pair.Key] = new Stat
+            {
+                Type = pair.Key,
+                Value = pair.Value,
+                Multiplier = 1f
+            };
+        }
+        CurrentHealth = Stats[StatType.MaxHealth].GetStatValueInt();
+        CurrentStamina = Stats[StatType.MaxStamina].GetStatValueInt();
+        CurrentShield = Stats[StatType.MaxShield].GetStatValueInt();
+        CurrentAmmo = Stats[StatType.GunMagazineSize].GetStatValueInt();
+    }
     #endregion
 
     public override void OnStartServer()
     {
         base.OnStartServer();
-        InitialiseStats();
+        InitializeStats();
     }
 
     public override void OnStartLocalPlayer()
@@ -43,71 +140,7 @@ public class PlayerStatHandler : NetworkBehaviour
     }
 
 
-    [Server]
-    private void InitialiseStats()
-    {
-        Stats = new Stats();
-        CopyStats(BaseStats.stats, Stats);
-        
-        CurrentHealth = Stats.MaxHealth;
-        CurrentStamina = Stats.MaxStamina;
-        CurrentShield = Stats.MaxShield;
-        CurrentAmmo = Stats.GunMagazineSize;
-    }
-
-    #region BIG STAT METHODS
-    
-    private void CopyStats(Stats source, Stats target)
-    {
-        target.MaxHealth = source.MaxHealth;
-        target.MaxShield = source.MaxShield;
-        target.MaxStamina = source.MaxStamina;
-        target.GunProjectileCount = source.GunProjectileCount;
-        target.GunMagazineSize = source.GunMagazineSize;
-
-        target.HealthRegenRate = source.HealthRegenRate;
-        target.HealthRegenDelay = source.HealthRegenDelay;
-        target.StaminaRegenRate = source.StaminaRegenRate;
-        target.StaminaRegenDelay = source.StaminaRegenDelay;
-        target.ShieldRegenRate = source.ShieldRegenRate;
-        target.ShieldRegenDelay = source.ShieldRegenDelay;
-        target.HealthLeechFlat = source.HealthLeechFlat;
-        target.HealthLeechPercent = source.HealthLeechPercent;
-        target.HealthOnKill = source.HealthOnKill;
-        target.ShieldOnKill = source.ShieldOnKill;
-        target.StaminaOnKill = source.StaminaOnKill;
-        target.HealthOnBlock = source.HealthOnBlock;
-        target.ShieldOnBlock = source.ShieldOnBlock;
-        target.StaminaOnBlock = source.StaminaOnBlock;
-        target.BlockCooldown = source.BlockCooldown;
-        target.BlockDuration = source.BlockDuration;
-        target.MovementSpeed = source.MovementSpeed;
-        target.JumpHeight = source.JumpHeight;
-        target.GravityScale = source.GravityScale;
-        target.CritChance = source.CritChance;
-        target.CritDamage = source.CritDamage;
-        target.GunDamage = source.GunDamage;
-        target.GunAttackSpeed = source.GunAttackSpeed;
-        target.GunReloadSpeed = source.GunReloadSpeed;
-        target.GunAccuracy = source.GunAccuracy;
-        target.GunProjectileSpeed = source.GunProjectileSpeed;
-        target.GunProjectileLifetime = source.GunProjectileLifetime;
-
-        target.CanDoubleJump = source.CanDoubleJump;
-        target.CanSuperSprint = source.CanSuperSprint;
-        target.CanRicochet = source.CanRicochet;
-        target.HasBulletGravity = source.HasBulletGravity;
-    }
-    
-    [Server]
-    public void SetStatValue(StatType type, object value)
-    {
-        var field = typeof(Stats).GetField(type.ToString());
-        if (field == null) throw new Exception($"Stat {type} not found");
-        field.SetValue(Stats, value);
-    }
-    
-    #endregion
+   
 
     #region Boons
 
