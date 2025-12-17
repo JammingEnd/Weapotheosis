@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using Models;
+using Models.Boons;
 using Models.Stats;
 using Unity.VisualScripting;
 
@@ -14,6 +15,7 @@ public class PlayerStatHandler : NetworkBehaviour
     
     public PlayerStats BaseStats;
 
+    [SyncVar] public bool DisableControls = false;
     
     #region Stats
     
@@ -89,18 +91,18 @@ public class PlayerStatHandler : NetworkBehaviour
     [Server]
     public void ModifyStat(StatType stat, float amount, IncrementTypes type)
     {
-        if (Stats.ContainsKey(stat))
+        if (Stats.TryGetValue(stat, out Stat statValue))
         {
             switch (type)
             {
                 case IncrementTypes.Flat:
-                    Stats[stat].ModifyFlat(amount);
+                    statValue.ModifyFlat(amount);
                     break;
                 case IncrementTypes.Percentage:
-                    Stats[stat].ModifyMultiplier(amount);
+                    statValue.ModifyMultiplier(amount);
                     break;
                 case IncrementTypes.Override:
-                    Stats[stat].Value = amount;
+                    statValue.Value = amount;
                     break;
             }
         }
@@ -132,25 +134,101 @@ public class PlayerStatHandler : NetworkBehaviour
     {
         base.OnStartServer();
         InitializeStats();
+        
+        GameRoundHandler.Instance.RegisterPlayer(this);
     }
 
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
         PlayerUIHandler ui = FindObjectOfType<PlayerUIHandler>();
+        PlayerBoonUIHandler playerBoonUIHandler = FindObjectOfType<PlayerBoonUIHandler>();
         if (ui != null)
         {            
             ui.Initialize(this);
+            playerBoonUIHandler.Initialize(this);
         }
     }
 
-
+    #region Modifiers
+    
+    #endregion
    
 
     #region Boons
 
-    private List<BoonCardSC> activeBoons = new();
+    // Card and stacks
+    private Dictionary<int, int> activeBoons = new();
+    
+    [Server]
+    public void AddBoon(int id)
+    {
+        if (activeBoons.TryGetValue(id, out int value))
+        {
+            activeBoons[id] = value + 1;
+        }
+        else
+        {
+            activeBoons[id] = 1;
+        }
+    }
+    
+    [Server]
+    public  void RemoveBoon(int id) 
+    {
+        if (!activeBoons.TryGetValue(id, out int stacks))
+            return;
+
+        stacks--;
+
+        if (stacks <= 0)
+            activeBoons.Remove(id);
+        else
+            activeBoons[id] = stacks;
+    }
+
+    [Server]
+    public bool IsBoonValid(int id)
+    {
+        BoonCardSC boon = BoonDatabase.GetBoonById(id);
+
+        if (activeBoons.TryGetValue(id, out int stacks))
+            return stacks < boon.MaxStacks;
+
+        return true;
+    }
+
+    [Server]
+    public void RecalculateStatsRoundStart()
+    {
+        InitializeStats();
+        
+        foreach (var pair in activeBoons)
+        {
+            int boonId = pair.Key;
+            int stacks = pair.Value;
+
+            BoonCardSC boon = BoonDatabase.GetBoonById(boonId);
+
+            for (int i = 0; i < stacks; i++)
+            {
+                foreach (var effect in boon.effects)
+                {
+                    ModifyStat(effect.statType, effect.value, effect.incrementType);
+                }
+            }
+        }
+    }
+    
+    [Command]
+    public void CmdSelectBoon(int boonId)
+    {
+        BoonCardSC boon = BoonDatabase.GetBoonById(boonId);
+        AddBoon(boon.BoonId);
+    }
     
     #endregion
+    
+    
     
 } 

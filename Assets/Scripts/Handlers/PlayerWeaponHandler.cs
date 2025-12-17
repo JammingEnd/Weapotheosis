@@ -57,6 +57,8 @@ public class PlayerWeaponHandler : NetworkBehaviour
     private void Update()
     {
         if (!isLocalPlayer) return;
+        if(_stats.DisableControls) return;
+        
         if (_isFiring && _currentCooldown <= 0f)
         {
             _currentCooldown = FireRate;

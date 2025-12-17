@@ -9,6 +9,7 @@ public class PlayerCameraController : NetworkBehaviour
 {
     public Camera _playerCamera;
     public Transform playercamRoot;
+    private PlayerStatHandler _stats;
     
     private InputSystem_Actions inputActions;
 
@@ -20,6 +21,7 @@ public class PlayerCameraController : NetworkBehaviour
     private void Update()
     {
         if (!isLocalPlayer) return;
+        if(_stats.DisableControls) return;
 
         float mouseX = lookInput.x * MouseSensitivity;
         float mouseY = lookInput.y * MouseSensitivity;
@@ -55,8 +57,7 @@ public class PlayerCameraController : NetworkBehaviour
         if (playercamRoot != null)
             playercamRoot.gameObject.SetActive(true);
 
-        
-        Cursor.lockState = CursorLockMode.Locked;
+        _stats = GetComponent<PlayerStatHandler>();
         
         
     }

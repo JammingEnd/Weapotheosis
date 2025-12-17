@@ -23,7 +23,8 @@ public class PlayerUIHandler : MonoBehaviour
    }
 
    public Canvas playerCanvas;
-
+   public GameObject rootPanel;
+   
    public TextMeshProUGUI playerName;
    public TextMeshProUGUI playerHealth;
    public Image playerHealthBar;

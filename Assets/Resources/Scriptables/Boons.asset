@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ffbd6fbbde044f7ab88f3c314dc732b, type: 3}
+  m_Name: Boons
+  m_EditorClassIdentifier: Assembly-CSharp::Models.Boons.BoonContainer
+  AvailableBoons:
+  - {fileID: 11400000, guid: fbea561f2204f0cfdba20ba767529625, type: 2}
+  - {fileID: 11400000, guid: a8dbbe83da5daae3b96589b4cd38dfcb, type: 2}
+  - {fileID: 11400000, guid: f62c1569e39bc2c0abf376576998e021, type: 2}
+  - {fileID: 11400000, guid: d509f3a1564472bad872b69ad421b3fe, type: 2}
+  - {fileID: 11400000, guid: cfa1c40552a09f825a14e29fc78f20dc, type: 2}

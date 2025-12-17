@@ -147,6 +147,7 @@ namespace NetworkHandlers
         private void OnMove(InputAction.CallbackContext ctx)
         {
             if (!isLocalPlayer) return;
+            if(_stats.DisableControls) return;
 
             movementInput = ctx.ReadValue<Vector2>();
             CmdSetMoveInput(movementInput);
