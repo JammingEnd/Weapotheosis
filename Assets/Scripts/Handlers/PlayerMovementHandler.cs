@@ -10,16 +10,13 @@ namespace NetworkHandlers
     [RequireComponent(typeof(PlayerStatHandler))]
     public class PlayerMovementHandler : NetworkBehaviour
     {
-        [Header("References")]
         public Rigidbody rb;
         private PlayerStatHandler _stats;
 
-        [Header("Movement Settings")]
         public float moveAcceleration = 30f;
         public float airControlMultiplier = 0.4f;
         private Vector2 movementInput;
 
-        [Header("Grounding")]
         [SerializeField] private LayerMask groundMask;
         private bool isGrounded;
         private bool hasDoubleJumped = false;
@@ -53,17 +50,20 @@ namespace NetworkHandlers
 
         private void OnMove(InputAction.CallbackContext ctx)
         {
-            if (!isLocalPlayer || _stats.DisableControls) return;
+            if (_stats.DisableControls) return;
 
-            Vector2 input = ctx.ReadValue<Vector2>();
-            movementInput = input;
-            CmdSetMoveInput(input);
+            movementInput = ctx.ReadValue<Vector2>();
+
+            if (isLocalPlayer)
+                CmdSetMoveInput(movementInput);
         }
 
         private void OnJump()
         {
-            if (!isLocalPlayer || _stats.DisableControls) return;
-            CmdJump();
+            if (_stats.DisableControls) return;
+
+            if (isLocalPlayer)
+                CmdJump();
         }
 
         #region Commands
@@ -71,7 +71,7 @@ namespace NetworkHandlers
         [Command]
         private void CmdSetMoveInput(Vector2 input)
         {
-            movementInput = input; // update server-side
+            movementInput = input;
         }
 
         [Command]
@@ -86,7 +86,7 @@ namespace NetworkHandlers
                 float jumpForce = _stats.GetStatValue<float>(StatType.JumpHeight);
 
                 Vector3 vel = rb.linearVelocity;
-                vel.y = 0; // reset vertical velocity for consistent jumps
+                vel.y = 0;
                 rb.linearVelocity = vel;
 
                 rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
@@ -95,60 +95,73 @@ namespace NetworkHandlers
 
         #endregion
 
-        #region Server Movement
+        #region Movement
+
+        private void Update()
+        {
+            if (!isLocalPlayer || _stats == null || !_stats.Initialized) return;
+
+            // Apply input **locally** for immediate response
+            ApplyLocalMovement();
+        }
 
         [ServerCallback]
         private void FixedUpdate()
         {
-            if (!_stats.Initialized) return;
+            if (_stats == null || !_stats.Initialized) return;
 
             CheckGrounded();
-            Move();
+            ApplyServerMovement();
+        }
+
+        private void ApplyLocalMovement()
+        {
+            Vector3 wishDir = transform.TransformDirection(new Vector3(movementInput.x, 0, movementInput.y));
+            float control = isGrounded ? 1f : airControlMultiplier;
+
+            Vector3 vel = rb.linearVelocity;
+            Vector3 horizontalVel = new Vector3(vel.x, 0, vel.z);
+
+            rb.AddForce(wishDir * moveAcceleration * control * 0.5f, ForceMode.Acceleration); // small local simulation
+
+            float maxSpeed = _stats.GetStatValue<float>(StatType.MovementSpeed);
+            if (horizontalVel.magnitude > maxSpeed)
+            {
+                Vector3 clamped = horizontalVel.normalized * maxSpeed;
+                rb.linearVelocity = new Vector3(clamped.x, vel.y, clamped.z);
+            }
         }
 
         [Server]
+        private void ApplyServerMovement()
+        {
+            Vector3 wishDir = transform.TransformDirection(new Vector3(movementInput.x, 0, movementInput.y));
+            float control = isGrounded ? 1f : airControlMultiplier;
+
+            Vector3 vel = rb.linearVelocity;
+            Vector3 horizontalVel = new Vector3(vel.x, 0, vel.z);
+
+            rb.AddForce(wishDir * moveAcceleration * control, ForceMode.Acceleration);
+
+            float maxSpeed = _stats.GetStatValue<float>(StatType.MovementSpeed);
+            if (horizontalVel.magnitude > maxSpeed)
+            {
+                Vector3 clamped = horizontalVel.normalized * maxSpeed;
+                rb.linearVelocity = new Vector3(clamped.x, vel.y, clamped.z);
+            }
+        }
+
         private void CheckGrounded()
         {
             float radius = 0.3f;
             float castDistance = 0.4f;
             Vector3 origin = transform.position + Vector3.up * (radius + 0.1f);
 
-            isGrounded = Physics.SphereCast(
-                origin,
-                radius,
-                Vector3.down,
-                out RaycastHit hit,
-                castDistance,
-                groundMask,
-                QueryTriggerInteraction.Ignore
-            );
+            isGrounded = Physics.SphereCast(origin, radius, Vector3.down, out RaycastHit hit, castDistance, groundMask);
 
             if (isGrounded)
             {
                 hasDoubleJumped = false;
-            }
-        }
-
-        [Server]
-        private void Move()
-        {
-            if (_stats == null) return;
-
-            Vector3 wishDir = transform.TransformDirection(new Vector3(movementInput.x, 0, movementInput.y));
-            float control = isGrounded ? 1f : airControlMultiplier;
-
-            Vector3 velocity = rb.linearVelocity;
-            Vector3 horizontalVel = new Vector3(velocity.x, 0, velocity.z);
-
-            // Apply acceleration
-            rb.AddForce(wishDir * moveAcceleration * control, ForceMode.Acceleration);
-
-            // Clamp horizontal speed
-            float maxSpeed = _stats.GetStatValue<float>(StatType.MovementSpeed);
-            if (horizontalVel.magnitude > maxSpeed)
-            {
-                Vector3 clamped = horizontalVel.normalized * maxSpeed;
-                rb.linearVelocity = new Vector3(clamped.x, velocity.y, clamped.z);
             }
         }
 
