@@ -18,6 +18,8 @@ public class EntityHealthHandler : NetworkBehaviour
     {
         if (_stats == null) return;
         
+        Debug.Log("Ouch!, damage received " + damage);
+        
         _stats.CurrentHealth -= Mathf.RoundToInt(damage);
         if (_stats.CurrentHealth <= 0)
         {

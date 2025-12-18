@@ -64,7 +64,6 @@ public class PlayerEffectPoolHandler : MonoBehaviour
         { 
             lifetime = ps.main.duration;
             
-            Debug.Log("Play!");
             ps.Stop();
             ps.Play();
             
