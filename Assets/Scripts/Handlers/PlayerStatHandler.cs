@@ -12,12 +12,12 @@ using Unity.VisualScripting;
 
 public class PlayerStatHandler : NetworkBehaviour
 {
-    [SyncVar] public bool Initialized;
+    [SyncVar(hook = nameof(OnInitializedChanged))] 
+    public bool Initialized;
     
     public PlayerStats BaseStats;
     
-    [SyncVar(hook = nameof(OnInitializedChanged))] 
-    public bool DisableControls = false;
+    [SyncVar]  public bool DisableControls = false;
     
     #region Stats
     
