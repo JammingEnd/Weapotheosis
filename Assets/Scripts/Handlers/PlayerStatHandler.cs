@@ -15,8 +15,9 @@ public class PlayerStatHandler : NetworkBehaviour
     [SyncVar] public bool Initialized;
     
     public PlayerStats BaseStats;
-
-    [SyncVar] public bool DisableControls = false;
+    
+    [SyncVar(hook = nameof(OnInitializedChanged))] 
+    public bool DisableControls = false;
     
     #region Stats
     
@@ -143,17 +144,17 @@ public class PlayerStatHandler : NetworkBehaviour
         
         GameRoundHandler.Instance.RegisterPlayer(this);
     }
-
-    public override void OnStartLocalPlayer()
+    
+    private void OnInitializedChanged(bool oldValue, bool newValue)
     {
-        base.OnStartLocalPlayer();
+        if(!newValue) return;
+        if(!isLocalPlayer) return;
+        
         PlayerUIHandler ui = FindObjectOfType<PlayerUIHandler>();
-        PlayerBoonUIHandler playerBoonUIHandler = FindObjectOfType<PlayerBoonUIHandler>();
-        if (ui != null)
-        {            
-            ui.Initialize(this);
-            playerBoonUIHandler.Initialize(this);
-        }
+        PlayerBoonUIHandler boonUI = FindObjectOfType<PlayerBoonUIHandler>();
+
+        ui.Initialize(this);
+        boonUI.Initialize(this);
     }
 
     #region Modifiers
