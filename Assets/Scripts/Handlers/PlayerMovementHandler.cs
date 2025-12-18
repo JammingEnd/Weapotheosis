@@ -20,7 +20,7 @@ namespace NetworkHandlers
         public float airControlMultiplier = 0.4f;
         
         private Vector2 movementInput;
-        private bool isGrounded;
+        [SyncVar] private bool isGrounded;
         private bool _hasDoubleJumped = false;
         [SerializeField] private LayerMask groundMask;
 
@@ -28,33 +28,29 @@ namespace NetworkHandlers
         {
             inputActions = new InputSystem_Actions();
         }
-        
-        /// <summary>
-        /// updating on server
-        /// </summary>
+       
         private void FixedUpdate()
         {
-            if (!isServer) return;
+            // PLAN: 
+            // if i am the server, move normally. no calls just local input
+            // if i am a client, send input to server and have server move me
             
-            CheckGrounded();
-            Move();
+            CheckGrounded(); 
+            
+            if (isServer && isLocalPlayer)
+            {
+                Move(movementInput);
+                
+            }
+            else if(isClient && isLocalPlayer)
+            {
+                MoveRpc(movementInput);
+            }
         }
-        
-        /// <summary>
-        /// send movementinput from client to server
-        /// </summary>
-        /// <param name="input"></param>
-        [Command]
-        private void CmdSetMoveInput(Vector2 input)
-        {
-            movementInput = input;
-        }
-        
         /// <summary>
         /// server should move the player
         /// </summary>
-        [Server]
-        void Move()
+        void Move(Vector2 input)
         {
             if (_stats == null || !_stats.Initialized) return;
     
@@ -73,6 +69,12 @@ namespace NetworkHandlers
                 Vector3 clamped = horizontalVelocity.normalized * maxSpeed;
                 rb.linearVelocity = new Vector3(clamped.x, rb.linearVelocity.y, clamped.z);
             }
+        }
+
+        [ClientRpc]
+        private void MoveRpc(Vector2 input)
+        {
+            Move(input);
         }
         
         /// <summary>
@@ -94,7 +96,7 @@ namespace NetworkHandlers
         /// server checks if player is grounded
         /// </summary>
         [Server]
-        void CheckGrounded()
+        private void CheckGrounded()
         {
             // grounded check via spherecast
             float radius = 0.3f;
@@ -117,23 +119,7 @@ namespace NetworkHandlers
             }
         }
 
-        /// <summary>
-        /// local player jump input
-        /// </summary>
-        /// <param name="ctx"></param>
-        void OnJump(InputAction.CallbackContext ctx)
-        {
-            if (!isLocalPlayer) return;
-            
-            Debug.Log("Jump input received");
-            CmdJump();
-        }
-        
-        /// <summary>
-        /// send jump command to server
-        /// </summary>
-        [Command]
-        void CmdJump()
+        private void Jump(bool isGrounded)
         {
             if (isGrounded || _stats.GetStatValue<bool>(StatType.CanDoubleJump) && !_hasDoubleJumped)
             {
@@ -148,7 +134,12 @@ namespace NetworkHandlers
 
                 rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
             }
-
+            
+        }
+        [ClientRpc]
+        private void RpcJump(bool isGrounded)
+        {
+            Jump(isGrounded);
         }
         
         
@@ -174,6 +165,33 @@ namespace NetworkHandlers
             inputActions.Player.Jump.performed += OnJump;
             
             _stats = GetComponent<PlayerStatHandler>();
+        }
+        
+        /// <summary>
+        /// send movementinput from client to server
+        /// </summary>
+        /// <param name="input"></param>
+        [Command]
+        private void CmdSetMoveInput(Vector2 input)
+        {
+            movementInput = input;
+        }
+        
+        /// <summary>
+        /// local player jump input
+        /// </summary>
+        /// <param name="ctx"></param>
+        void OnJump(InputAction.CallbackContext ctx)
+        {
+            if (isServer && isLocalPlayer)
+            {
+                Jump(isGrounded);
+                
+            }
+            else if(isClient && isLocalPlayer)
+            {
+                RpcJump(isGrounded);
+            }
         }
 
         /// <summary>
