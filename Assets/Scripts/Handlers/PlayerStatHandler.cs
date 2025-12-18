@@ -107,6 +107,9 @@ public class PlayerStatHandler : NetworkBehaviour
                     statValue.Value = amount;
                     break;
             }
+
+            // REASSIGN — REQUIRED
+            Stats[stat] = statValue;
         }
     }
 
