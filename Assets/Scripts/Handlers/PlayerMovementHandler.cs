@@ -109,7 +109,8 @@ namespace NetworkHandlers
         void OnJump(InputAction.CallbackContext ctx)
         {
             if (!isLocalPlayer) return;
-
+            
+            Debug.Log("Jump input received");
             CmdJump();
         }
         
@@ -178,6 +179,8 @@ namespace NetworkHandlers
         {
             if (!isLocalPlayer) return;
             if(_stats.DisableControls) return;
+            
+            Debug.Log("Move input received");
 
             movementInput = ctx.ReadValue<Vector2>();
             CmdSetMoveInput(movementInput);
