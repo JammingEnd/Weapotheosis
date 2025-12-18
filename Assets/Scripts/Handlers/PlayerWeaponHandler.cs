@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using Mirror;
@@ -9,6 +10,7 @@ public class PlayerWeaponHandler : NetworkBehaviour
 {
     public InputSystem_Actions inputActions;
     public GameObject projectilePrefab;
+    
     public Transform firePoint;
     [SerializeField] private Animator gunAnimator;
 
@@ -95,7 +97,7 @@ public class PlayerWeaponHandler : NetworkBehaviour
         if (_stats == null) return;
 
         GameObject proj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-        proj.GetComponent<ProjectileHitHandler>().Initialize(_stats.GetStatValue<float>(StatType.GunDamage), _stats, ProjectileType.Bullet);
+        proj.GetComponent<ProjectileHitHandler>().Initialize(_stats.GetStatValue<float>(StatType.GunDamage), _stats, ProjectileType.Bullet, _stats.GetStatValue<float>(StatType.GunProjectileSpeed));
         // bullet type
         if (_stats.GetStat(StatType.HasBulletGravity, out bool hasGravity)) {
             if (!hasGravity)
@@ -103,7 +105,6 @@ public class PlayerWeaponHandler : NetworkBehaviour
                 // normal bullet
                 BulletProjectile pmh = proj.AddComponent<BulletProjectile>(); 
                 pmh.Initialize( _stats.GetStatValue<float>(StatType.GunProjectileSpeed), _stats.GetStatValue<float>(StatType.GunProjectileLifetime));
-                
             }
             else
             {
@@ -112,11 +113,13 @@ public class PlayerWeaponHandler : NetworkBehaviour
                     _stats.GetStatValue<float>(StatType.GunProjectileSpeed), 
                     _stats.GetStatValue<float>(StatType.GunProjectileLifetime),
                     _stats.GetStatValue<float>(StatType.GravityScale)); 
+                
             }
             
         } 
         NetworkServer.Spawn(proj);
     }
+    
 
     [Command]
     private void CmdReload()
@@ -144,6 +147,12 @@ public class PlayerWeaponHandler : NetworkBehaviour
             gunAnimator.SetTrigger("ReloadFull");
         else
             gunAnimator.SetTrigger("ReloadPartial");
+    }
+
+    [ClientRpc]
+    private void RpcFireEffects(Vector3 start, Vector3 end, Transform muzzle)
+    {
+        // use the static effectpool handler
     }
 
     private void OnReload(InputAction.CallbackContext ctx)

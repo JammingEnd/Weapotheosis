@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Mirror;
 using Models.Boons;
 using TMPro;
+using Random = UnityEngine.Random;
 
 public class PlayerBoonUIHandler : MonoBehaviour
 {
@@ -55,7 +56,7 @@ public class PlayerBoonUIHandler : MonoBehaviour
 			cardComponent.Initialize(boon.CardName, boon.Description, boon.Icon, boon.Rarity, boon.BoonId);
 		}
 		
-		_selectedBoonId = boonIds[0];
+		_selectedBoonId = boonIds[Random.Range(0, boonIds.Length)];
 	}
 
 	// called from GameRoundHandler when the timer runs out
@@ -80,9 +81,7 @@ public class PlayerBoonUIHandler : MonoBehaviour
 	{
 		timerText .text = "Time Left: " + Mathf.CeilToInt(newValue).ToString();
 	}
-   
-   
-
+	
 	#endregion
 
 	private void Update()

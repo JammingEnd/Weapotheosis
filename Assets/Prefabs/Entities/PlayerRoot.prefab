@@ -476,7 +476,9 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+  Initialized: 0
   BaseStats: {fileID: 11400000, guid: 83372ef0d523b26ed91edfa0e2811b2c, type: 2}
+  DisableControls: 0
   CurrentHealth: 0
   CurrentStamina: 0
   CurrentShield: 0

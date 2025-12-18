@@ -30,5 +30,6 @@ public class EntityHealthHandler : NetworkBehaviour
     {
         // turn on ghost mode for the player, disabling combat components 
     }
+    
 
 }
