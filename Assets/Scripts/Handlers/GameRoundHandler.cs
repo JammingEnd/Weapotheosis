@@ -111,12 +111,8 @@ public class GameRoundHandler : NetworkBehaviour
    [Server]
    public void ConcludeBoonPhase()
    {
-      foreach (var conn in NetworkServer.connections.Values)
-      {
-         if(conn.identity == null) continue;
-         
-         RpcActivateBoons();
-      }
+      RpcActivateBoons();
+      StopAllCoroutines();
    }
 
    [ClientRpc]
