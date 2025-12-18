@@ -122,6 +122,7 @@ public class GameRoundHandler : NetworkBehaviour
    [ClientRpc]
    private void RpcActivateBoons()
    {
+         Debug.Log("Activating selected boon");
          PlayerBoonUIHandler.Instance.ActivateBoon();
    }
 
