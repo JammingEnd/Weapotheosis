@@ -44,7 +44,7 @@ namespace NetworkHandlers
             }
             else if(isClient && isLocalPlayer)
             {
-                MoveRpc(movementInput);
+                CmdMove();
             }
         }
         /// <summary>
@@ -72,6 +72,12 @@ namespace NetworkHandlers
                 Vector3 clamped = horizontalVelocity.normalized * maxSpeed;
                 rb.linearVelocity = new Vector3(clamped.x, rb.linearVelocity.y, clamped.z);
             }
+        }
+
+        [Command]
+        private void CmdMove()
+        {
+            MoveRpc(movementInput);
         }
 
         [ClientRpc]
@@ -139,6 +145,13 @@ namespace NetworkHandlers
             }
             
         }
+
+        [Command]
+        private void CmdJump()
+        {
+            RpcJump(isGrounded);
+        }
+        
         [ClientRpc]
         private void RpcJump(bool isGrounded)
         {
@@ -193,7 +206,7 @@ namespace NetworkHandlers
             }
             else if(isClient && isLocalPlayer)
             {
-                RpcJump(isGrounded);
+                CmdJump();
             }
         }
 
