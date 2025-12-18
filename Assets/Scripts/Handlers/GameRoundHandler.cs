@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -17,6 +18,37 @@ public class GameRoundHandler : NetworkBehaviour
    [SerializeField] private int boonsPerRound = 3;
 
    List<PlayerStatHandler> _players = new List<PlayerStatHandler>();
+
+   #region Round Timer
+
+   [SyncVar(hook = nameof(OnBoonTimerChanged))]
+   private float cardSelectTimer;
+
+   [SerializeField] private float chooseTime = 10f;
+   
+   // using the hook, this is called Client-side
+   private void OnBoonTimerChanged(float oldValue, float newValue)
+   {
+      // Update UI Timer
+      PlayerBoonUIHandler.Instance.UpdateTimer(newValue);
+   }
+
+   [Server]
+   private IEnumerator BoonTimer()
+   {
+      cardSelectTimer = chooseTime;
+      while (cardSelectTimer > 0)
+      {
+         yield return new WaitForSeconds(1f);
+         cardSelectTimer -= 1f;
+      }
+      // Time's up, proceed with default selection or random selection
+      cardSelectTimer = 0f;
+      ConcludeBoonPhase();
+   }
+
+   #endregion
+   
 
    public void RegisterPlayer(PlayerStatHandler player)
    {
@@ -72,6 +104,19 @@ public class GameRoundHandler : NetworkBehaviour
    public void InitiateBoonPhase()
    {
       GrantBoons();
+      StopAllCoroutines();
+      StartCoroutine(BoonTimer());
+   }
+   
+   [Server]
+   public void ConcludeBoonPhase()
+   {
+      foreach (var conn in NetworkServer.connections.Values)
+      {
+         if(conn.identity == null) continue;
+         
+         PlayerBoonUIHandler.Instance.ActivateBoon();
+      }
    }
 
    #region Boons
@@ -98,13 +143,16 @@ public class GameRoundHandler : NetworkBehaviour
 
    private List<int> SelectBoons(int count, PlayerStatHandler player)
    {
+      HashSet<int> picked = new();
       List<int> result = new();
 
       for (int i = 0; i < count; i++)
       {
-         BoonCardSC boon = GetBoon(player);
-         if (boon == null) break;
+         BoonCardSC boon = GetBoon(player, picked);
+         if (boon == null)
+            break;
 
+         picked.Add(boon.BoonId);
          result.Add(boon.BoonId);
       }
 
@@ -112,35 +160,32 @@ public class GameRoundHandler : NetworkBehaviour
    }
 
 
-   private BoonCardSC GetBoon(PlayerStatHandler player)
+   private BoonCardSC GetBoon(PlayerStatHandler player, HashSet<int> alreadySelected)
    {
       BoonRarity rarity = RollRarity();
 
-      // Copy list so we can remove safely
-      List<BoonCardSC> pool = availableBoons.AvailableBoons
-         .Where(b => b.Rarity == rarity)
-         .ToList();
-
-      // Fallback if no boons of this rarity
-      while (pool.Count == 0 && rarity > BoonRarity.Common)
+      while (rarity >= BoonRarity.Common)
       {
-         rarity--;
-         pool = availableBoons.AvailableBoons
-            .Where(b => b.Rarity == rarity && !pool.Contains(b))
+         List<BoonCardSC> pool = availableBoons.AvailableBoons
+            .Where(b =>
+               b.Rarity == rarity &&
+               player.IsBoonValid(b.BoonId) &&
+               !alreadySelected.Contains(b.BoonId)
+            )
             .ToList();
+
+         if (pool.Count > 0)
+         {
+            return pool[UnityEngine.Random.Range(0, pool.Count)];
+         }
+
+         rarity--; // fallback
       }
 
-      // Remove invalid boons
-      pool.RemoveAll(b => !player.IsBoonValid(b.BoonId));
-
-      if (pool.Count == 0)
-      {
-         Debug.LogWarning("No valid boons found!");
-         return null;
-      }
-
-      return pool[UnityEngine.Random.Range(0, pool.Count)];
+      Debug.LogWarning("No valid boons found!");
+      return null;
    }
+
 
    private BoonRarity RollRarity()
    {
@@ -173,4 +218,5 @@ public class GameRoundHandler : NetworkBehaviour
       PlayerBoonUIHandler.Instance.ShowBoons(boonIds);
    }
    #endregion
+   
 }

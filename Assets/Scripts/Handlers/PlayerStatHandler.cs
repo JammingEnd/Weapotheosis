@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Helpers;
 using UnityEngine;
 using Mirror;
 using Models;
@@ -121,13 +122,18 @@ public class PlayerStatHandler : NetworkBehaviour
                 Multiplier = 1f
             };
         }
+        SetCurrentStats();
+        Initialized = true;
+    }
+
+    private void SetCurrentStats()
+    {
         CurrentHealth = Stats[StatType.MaxHealth].GetStatValueInt();
         CurrentStamina = Stats[StatType.MaxStamina].GetStatValueInt();
         CurrentShield = Stats[StatType.MaxShield].GetStatValueInt();
         CurrentAmmo = Stats[StatType.GunMagazineSize].GetStatValueInt();
-        
-        Initialized = true;
     }
+    
     #endregion
 
     public override void OnStartServer()
@@ -192,6 +198,8 @@ public class PlayerStatHandler : NetworkBehaviour
     {
         BoonCardSC boon = BoonDatabase.GetBoonById(id);
 
+        if(boon.MaxStacks == 0) return true;
+        
         if (activeBoons.TryGetValue(id, out int stacks))
             return stacks < boon.MaxStacks;
 
@@ -218,6 +226,8 @@ public class PlayerStatHandler : NetworkBehaviour
                 }
             }
         }
+        
+        SetCurrentStats();
     }
     
     [Command]
@@ -225,6 +235,9 @@ public class PlayerStatHandler : NetworkBehaviour
     {
         BoonCardSC boon = BoonDatabase.GetBoonById(boonId);
         AddBoon(boon.BoonId);
+        RecalculateStatsRoundStart();
+        DisableControls = false;
+        CursorHelper.LockCursor();
     }
     
     #endregion

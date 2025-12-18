@@ -130,6 +130,7 @@ MonoBehaviour:
   title: {fileID: 5382851559659175508}
   description: {fileID: 2671465294532666618}
   icon: {fileID: 3137252516826365503}
+  background: {fileID: 5806613198305046041}
 --- !u!1 &6700903687509735387
 GameObject:
   m_ObjectHideFlags: 0

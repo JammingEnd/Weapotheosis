@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using Helpers;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
 using Models.Boons;
+using TMPro;
 
 public class PlayerBoonUIHandler : MonoBehaviour
 {
@@ -21,13 +23,14 @@ public class PlayerBoonUIHandler : MonoBehaviour
 	}
 
 	[SerializeField] private GameObject boonPanel;
-	[SerializeField] private Button pickButton;
 	[SerializeField] private GameObject cardPrefab;
 	[SerializeField] private Transform cardParent;
-	
-	private Card _selectedCard;
+	[SerializeField] private TextMeshProUGUI timerText;
 	
 	private PlayerStatHandler _stats;
+	
+	private int _selectedBoonId = 1;
+	private GameObject _selectedCardObject;
 
 	public void Initialize(PlayerStatHandler stats)
 	{
@@ -49,21 +52,46 @@ public class PlayerBoonUIHandler : MonoBehaviour
 			
 			GameObject card = Instantiate(cardPrefab, cardParent);
 			Card cardComponent = card.GetComponent<Card>();
-			cardComponent.Initialize(boon.CardName, boon.Description, boon.Icon, boon.BoonId);
+			cardComponent.Initialize(boon.CardName, boon.Description, boon.Icon, boon.Rarity, boon.BoonId);
 		}
+		
+		_selectedBoonId = boonIds[0];
 	}
 
-	private void SelectBoon(int boonId)
+	// called from GameRoundHandler when the timer runs out
+	[Client]
+	public void ActivateBoon()
 	{
-		// wait out timer for other players 
-		
-		_stats.CmdSelectBoon(boonId);
+		_stats.CmdSelectBoon(_selectedBoonId);
 		
 		boonPanel.SetActive(false);
 		PlayerUIHandler.instance.rootPanel.gameObject.SetActive(true);
+	}
+
+	public void SelectBoon(int boonId, GameObject card)
+	{
+		_selectedBoonId = boonId;
+		if (_selectedCardObject != null)
+			_selectedCardObject.transform.localScale = Vector3.one;
+		_selectedCardObject = card;
+	}
+
+	public void UpdateTimer(float newValue)
+	{
+		timerText .text = "Time Left: " + Mathf.CeilToInt(newValue).ToString();
 	}
    
    
 
 	#endregion
+
+	private void Update()
+	{
+		if (_selectedCardObject != null)
+		{
+			// some sin scaling effect
+			float scale = 1f + 0.05f * Mathf.Sin(Time.time * 5f);
+			_selectedCardObject.transform.localScale = new Vector3(scale, scale, scale);
+		}
+	}
 }
