@@ -19,7 +19,7 @@ namespace NetworkHandlers
         public float maxSpeed => _stats.GetStatValue<float>(StatType.MovementSpeed);
         public float airControlMultiplier = 0.4f;
         
-        [SyncVar] private Vector2 movementInput;
+        private Vector2 movementInput;
         [SyncVar] private bool isGrounded;
         [SyncVar] private bool _hasDoubleJumped = false;
         [SerializeField] private LayerMask groundMask;
