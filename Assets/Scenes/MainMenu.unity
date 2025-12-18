@@ -1438,7 +1438,6 @@ GameObject:
   - component: {fileID: 1681172639}
   - component: {fileID: 1681172643}
   - component: {fileID: 1681172642}
-  - component: {fileID: 1681172641}
   - component: {fileID: 1681172640}
   - component: {fileID: 1681172644}
   m_Layer: 0
@@ -1511,23 +1510,6 @@ MonoBehaviour:
   evaluationInterval: 3
   timeInterpolationGui: 0
   PlayerGameplayPrefab: {fileID: 7273187195688825592, guid: 238ef72b02e1d854589054b5ecf6d4af, type: 3}
---- !u!114 &1681172641
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1681172638}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
-  sceneId: 1819541888
-  _assetId: 0
-  serverOnly: 0
-  visibility: 0
-  hasSpawned: 0
 --- !u!114 &1681172642
 MonoBehaviour:
   m_ObjectHideFlags: 0
