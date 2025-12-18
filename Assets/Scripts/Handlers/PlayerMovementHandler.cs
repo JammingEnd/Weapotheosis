@@ -12,68 +12,51 @@ namespace NetworkHandlers
     {
         public InputSystem_Actions inputActions;
         private PlayerStatHandler _stats;
-
+        
         [Header("Physics")]
         public Rigidbody rb;
         public float moveAcceleration = 30f;
+        public float maxSpeed => _stats.GetStatValue<float>(StatType.MovementSpeed);
         public float airControlMultiplier = 0.4f;
-        public LayerMask groundMask;
-
-        // Movement state
+        
         [SyncVar] private Vector2 movementInput;
-        private bool isGrounded;
-        private bool _hasDoubleJumped = false;
+        [SyncVar] private bool isGrounded;
+        [SyncVar] private bool _hasDoubleJumped = false;
+        [SerializeField] private LayerMask groundMask;
 
         private void Awake()
         {
             inputActions = new InputSystem_Actions();
-            rb = GetComponent<Rigidbody>();
         }
-
+        
+        /// <summary>
+        /// updating on server
+        /// </summary>
         private void FixedUpdate()
         {
-            if (!isServer) return; // Server-authoritative movement
-
+            if (!isServer) return;
+            
             CheckGrounded();
             Move();
         }
-
-        #region Input Commands
-
+        
+        /// <summary>
+        /// send movementinput from client to server
+        /// </summary>
+        /// <param name="input"></param>
         [Command]
         private void CmdSetMoveInput(Vector2 input)
         {
             movementInput = input;
         }
 
-        [Command]
-        private void CmdJump()
-        {
-            if (_stats == null || !_stats.Initialized) return;
-
-            bool canDoubleJump = _stats.GetStatValue<bool>(StatType.CanDoubleJump);
-            if (isGrounded || (canDoubleJump && !_hasDoubleJumped))
-            {
-                if (!isGrounded) _hasDoubleJumped = true;
-
-                float jumpForce = _stats.GetStatValue<float>(StatType.JumpHeight);
-
-                // Reset vertical velocity for consistent jump
-                Vector3 vel = rb.linearVelocity;
-                vel.y = 0;
-                rb.linearVelocity = vel;
-
-                rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
-            }
-        }
-
-        #endregion
-
-        #region Movement
-
+        /// <summary>
+        /// server checks if player is grounded
+        /// </summary>
         [Server]
-        private void CheckGrounded()
+        void CheckGrounded()
         {
+            // grounded check via spherecast
             float radius = 0.3f;
             float castDistance = 0.4f;
 
@@ -94,75 +77,112 @@ namespace NetworkHandlers
             }
         }
 
+        /// <summary>
+        /// server should move the player
+        /// </summary>
         [Server]
-        private void Move()
+        void Move()
         {
             if (_stats == null || !_stats.Initialized) return;
-
+    
             Vector3 wishDir = transform.TransformDirection(
                 new Vector3(movementInput.x, 0, movementInput.y)
             );
 
             float control = isGrounded ? 1f : airControlMultiplier;
 
-            // Apply acceleration
             rb.AddForce(wishDir * moveAcceleration * control, ForceMode.Acceleration);
 
-            // Clamp horizontal speed
+            // Clamp speed
             Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-            float maxSpeed = _stats.GetStatValue<float>(StatType.MovementSpeed);
             if (horizontalVelocity.magnitude > maxSpeed)
             {
                 Vector3 clamped = horizontalVelocity.normalized * maxSpeed;
                 rb.linearVelocity = new Vector3(clamped.x, rb.linearVelocity.y, clamped.z);
             }
         }
+        
+        /// <summary>
+        /// local player jump input
+        /// </summary>
+        /// <param name="ctx"></param>
+        void OnJump(InputAction.CallbackContext ctx)
+        {
+            if (!isLocalPlayer) return;
 
-        #endregion
+            CmdJump();
+        }
+        
+        /// <summary>
+        /// send jump command to server
+        /// </summary>
+        [Command]
+        void CmdJump()
+        {
+            if (isGrounded || _stats.GetStatValue<bool>(StatType.CanDoubleJump) && !_hasDoubleJumped)
+            {
+                if (!isGrounded) _hasDoubleJumped = true;
 
-        #region Unity Events
+                float jumpForce = _stats.GetStatValue<float>(StatType.JumpHeight);
 
+                // Reset vertical velocity to make jumps consistent
+                Vector3 vel = rb.linearVelocity;
+                vel.y = 0;
+                rb.linearVelocity = vel;
+
+                rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
+            }
+
+        }
+        
+        /// <summary>
+        /// get local stats
+        /// </summary>
         public override void OnStartServer()
         {
             base.OnStartServer();
             _stats = GetComponent<PlayerStatHandler>();
         }
-
+        
+        /// <summary>
+        /// enable input actions for local player
+        /// </summary>
         public override void OnStartLocalPlayer()
         {
             base.OnStartLocalPlayer();
-            _stats = GetComponent<PlayerStatHandler>();
-
             inputActions.Player.Enable();
+
             inputActions.Player.Move.performed += OnMove;
             inputActions.Player.Move.canceled += OnMove;
             inputActions.Player.Jump.performed += OnJump;
+            
+            _stats = GetComponent<PlayerStatHandler>();
         }
 
+        /// <summary>
+        /// disable input
+        /// </summary>
         private void OnDisable()
         {
-            if (!isLocalPlayer) return;
-            inputActions.Player.Disable();
+            if (isLocalPlayer)
+            {
+                inputActions.Player.Disable();
+            }
         }
 
-        #endregion
-
-        #region Input Handlers
-
+        /// <summary>
+        /// local player move input
+        /// </summary>
+        /// <param name="ctx"></param>
         private void OnMove(InputAction.CallbackContext ctx)
         {
-            if (!isLocalPlayer || (_stats != null && _stats.DisableControls)) return;
-
-            Vector2 input = ctx.ReadValue<Vector2>();
-            CmdSetMoveInput(input);
-        }
-
-        private void OnJump(InputAction.CallbackContext ctx)
-        {
             if (!isLocalPlayer) return;
-            CmdJump();
-        }
+            if(_stats.DisableControls) return;
 
-        #endregion
+            movementInput = ctx.ReadValue<Vector2>();
+            CmdSetMoveInput(movementInput);
+        }
+        
     }
 }
+
