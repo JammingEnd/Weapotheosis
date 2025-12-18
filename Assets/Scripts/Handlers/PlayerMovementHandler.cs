@@ -34,8 +34,8 @@ namespace NetworkHandlers
             // PLAN: 
             // if i am the server, move normally. no calls just local input
             // if i am a client, send input to server and have server move me
-            
-            CheckGrounded(); 
+            if(isServer)
+                CheckGrounded(); 
             
             if (isServer && isLocalPlayer)
             {
@@ -52,10 +52,13 @@ namespace NetworkHandlers
         /// </summary>
         void Move(Vector2 input)
         {
+            
             if (_stats == null || !_stats.Initialized) return;
     
+            Debug.Log("Speed: " + maxSpeed);
+            
             Vector3 wishDir = transform.TransformDirection(
-                new Vector3(movementInput.x, 0, movementInput.y)
+                new Vector3(input.x, 0, input.y)
             );
 
             float control = isGrounded ? 1f : airControlMultiplier;
