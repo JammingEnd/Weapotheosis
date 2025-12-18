@@ -63,6 +63,7 @@ public class PlayerBoonUIHandler : MonoBehaviour
 	[Client]
 	public void ActivateBoon()
 	{
+		Debug.Log("Activating boon with id: " + _selectedBoonId);
 		_stats.CmdSelectBoon(_selectedBoonId);
 		
 		boonPanel.SetActive(false);

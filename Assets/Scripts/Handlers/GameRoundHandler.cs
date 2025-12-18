@@ -115,8 +115,14 @@ public class GameRoundHandler : NetworkBehaviour
       {
          if(conn.identity == null) continue;
          
-         PlayerBoonUIHandler.Instance.ActivateBoon();
+         RpcActivateBoons();
       }
+   }
+
+   [ClientRpc]
+   private void RpcActivateBoons()
+   {
+         PlayerBoonUIHandler.Instance.ActivateBoon();
    }
 
    #region Boons
