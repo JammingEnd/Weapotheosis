@@ -20,7 +20,7 @@ namespace NetworkHandlers
         public float airControlMultiplier = 0.4f;
         
         private Vector2 movementInput;
-        [SyncVar] private bool isGrounded;
+        private bool isGrounded;
         private bool _hasDoubleJumped = false;
         [SerializeField] private LayerMask groundMask;
 
