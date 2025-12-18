@@ -113,6 +113,8 @@ public class PlayerStatHandler : NetworkBehaviour
     [Server]
     public void InitializeStats()
     {
+        Debug.Log("Initializing Stats for Player: " + netId);
+        
         Stats.Clear();
         foreach (var pair in BaseStats.Stats)
         {
