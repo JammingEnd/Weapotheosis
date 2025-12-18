@@ -20,8 +20,8 @@ namespace NetworkHandlers
         public float airControlMultiplier = 0.4f;
         
         private Vector2 movementInput;
-        [SyncVar] private bool isGrounded;
-        [SyncVar] private bool _hasDoubleJumped = false;
+        private bool isGrounded;
+        private bool _hasDoubleJumped = false;
         [SerializeField] private LayerMask groundMask;
 
         private void Awake()
@@ -48,6 +48,46 @@ namespace NetworkHandlers
         private void CmdSetMoveInput(Vector2 input)
         {
             movementInput = input;
+        }
+        
+        /// <summary>
+        /// server should move the player
+        /// </summary>
+        [Server]
+        void Move()
+        {
+            if (_stats == null || !_stats.Initialized) return;
+    
+            Vector3 wishDir = transform.TransformDirection(
+                new Vector3(movementInput.x, 0, movementInput.y)
+            );
+
+            float control = isGrounded ? 1f : airControlMultiplier;
+
+            rb.AddForce(wishDir * moveAcceleration * control, ForceMode.Acceleration);
+
+            // Clamp speed
+            Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+            if (horizontalVelocity.magnitude > maxSpeed)
+            {
+                Vector3 clamped = horizontalVelocity.normalized * maxSpeed;
+                rb.linearVelocity = new Vector3(clamped.x, rb.linearVelocity.y, clamped.z);
+            }
+        }
+        
+        /// <summary>
+        /// local player move input
+        /// </summary>
+        /// <param name="ctx"></param>
+        private void OnMove(InputAction.CallbackContext ctx)
+        {
+            if (!isLocalPlayer) return;
+            if(_stats.DisableControls) return;
+            
+            Debug.Log("Move input received");
+
+            movementInput = ctx.ReadValue<Vector2>();
+            CmdSetMoveInput(movementInput);
         }
 
         /// <summary>
@@ -77,31 +117,6 @@ namespace NetworkHandlers
             }
         }
 
-        /// <summary>
-        /// server should move the player
-        /// </summary>
-        [Server]
-        void Move()
-        {
-            if (_stats == null || !_stats.Initialized) return;
-    
-            Vector3 wishDir = transform.TransformDirection(
-                new Vector3(movementInput.x, 0, movementInput.y)
-            );
-
-            float control = isGrounded ? 1f : airControlMultiplier;
-
-            rb.AddForce(wishDir * moveAcceleration * control, ForceMode.Acceleration);
-
-            // Clamp speed
-            Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-            if (horizontalVelocity.magnitude > maxSpeed)
-            {
-                Vector3 clamped = horizontalVelocity.normalized * maxSpeed;
-                rb.linearVelocity = new Vector3(clamped.x, rb.linearVelocity.y, clamped.z);
-            }
-        }
-        
         /// <summary>
         /// local player jump input
         /// </summary>
@@ -135,6 +150,7 @@ namespace NetworkHandlers
             }
 
         }
+        
         
         /// <summary>
         /// get local stats
@@ -171,20 +187,7 @@ namespace NetworkHandlers
             }
         }
 
-        /// <summary>
-        /// local player move input
-        /// </summary>
-        /// <param name="ctx"></param>
-        private void OnMove(InputAction.CallbackContext ctx)
-        {
-            if (!isLocalPlayer) return;
-            if(_stats.DisableControls) return;
-            
-            Debug.Log("Move input received");
-
-            movementInput = ctx.ReadValue<Vector2>();
-            CmdSetMoveInput(movementInput);
-        }
+       
         
     }
 }
