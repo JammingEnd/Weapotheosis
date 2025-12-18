@@ -146,7 +146,9 @@ public class GameRoundHandler : NetworkBehaviour
       HashSet<int> picked = new();
       List<int> result = new();
 
-      for (int i = 0; i < count; i++)
+      int safety = 50; // prevent infinite loops
+
+      while (result.Count < count && safety-- > 0)
       {
          BoonCardSC boon = GetBoon(player, picked);
          if (boon == null)
@@ -158,6 +160,7 @@ public class GameRoundHandler : NetworkBehaviour
 
       return result;
    }
+
 
 
    private BoonCardSC GetBoon(PlayerStatHandler player, HashSet<int> alreadySelected)
