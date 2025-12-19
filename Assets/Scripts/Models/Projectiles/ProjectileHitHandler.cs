@@ -65,6 +65,12 @@ public class ProjectileHitHandler : NetworkBehaviour
         NetworkServer.Destroy(gameObject);
     }
 
+    [ClientRpc]
+    private void SendDamageToClient()
+    {
+        
+    }
+
 
     [ClientRpc]
     private void RpcPlayHitEffect(Vector3 position, Quaternion direction)
