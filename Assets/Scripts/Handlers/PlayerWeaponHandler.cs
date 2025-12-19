@@ -81,8 +81,8 @@ public class PlayerWeaponHandler : NetworkBehaviour
         if (_isReloading || _currentAmmo <= 0 || _stats == null)
             return;
 
-        _currentAmmo--;
-        _stats.CurrentAmmo = _currentAmmo;
+        _stats.CurrentAmmo = --_currentAmmo;
+
 
         double now = NetworkTime.time;
         if (now < _nextServerFireTime)
@@ -97,7 +97,7 @@ public class PlayerWeaponHandler : NetworkBehaviour
         if (_stats == null) return;
 
         GameObject proj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-        proj.GetComponent<ProjectileHitHandler>().Initialize(_stats.GetStatValue<float>(StatType.GunDamage), _stats, ProjectileType.Bullet, _stats.GetStatValue<float>(StatType.GunProjectileSpeed));
+        proj.GetComponent<ProjectileHitHandler>().Initialize(_stats.GetStatValue<float>(StatType.GunDamage), this._stats, ProjectileType.Bullet, _stats.GetStatValue<float>(StatType.GunProjectileSpeed));
         // bullet type
         if (_stats.GetStat(StatType.HasBulletGravity, out bool hasGravity)) {
             if (!hasGravity)

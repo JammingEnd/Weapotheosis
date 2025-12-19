@@ -31,6 +31,8 @@ public class EntityHealthHandler : NetworkBehaviour
     private void Die()
     {
         // turn on ghost mode for the player, disabling combat components 
+        
+        //TODO: respawn player... use respawn method from PlayerStatHandler
     }
     
 

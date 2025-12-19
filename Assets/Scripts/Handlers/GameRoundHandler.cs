@@ -146,50 +146,21 @@ public class GameRoundHandler : NetworkBehaviour
 
    private List<int> SelectBoons(int count, PlayerStatHandler player)
    {
-      HashSet<int> picked = new();
+      HashSet<int> unavailble = player.GetUnavailbleBoons();
+      HashSet<int> availableBoonIds = new HashSet<int>(
+         availableBoons.AvailableBoons.Select(b => b.BoonId).Where(id => !unavailble.Contains(id))
+      );
       List<int> result = new();
-
-      int safety = 50; // prevent infinite loops
-
-      while (result.Count < count && safety-- > 0)
+      
+      for (int i = 0; i < count; i++)
       {
-         BoonCardSC boon = GetBoon(player, picked);
-         if (boon == null)
-            break;
-
-         picked.Add(boon.BoonId);
-         result.Add(boon.BoonId);
-      }
-
-      return result;
-   }
-
-
-
-   private BoonCardSC GetBoon(PlayerStatHandler player, HashSet<int> alreadySelected)
-   {
-      BoonRarity rarity = RollRarity();
-
-      while (rarity >= BoonRarity.Common)
-      {
-         List<BoonCardSC> pool = availableBoons.AvailableBoons
-            .Where(b =>
-               b.Rarity == rarity &&
-               player.IsBoonValid(b.BoonId) &&
-               !alreadySelected.Contains(b.BoonId)
-            )
+         BoonRarity rarity = RollRarity();
+         List<int> possibleBoons = availableBoonIds
+            .Where(id => BoonDatabase.GetBoonById(id).Rarity == rarity)
             .ToList();
-
-         if (pool.Count > 0)
-         {
-            return pool[UnityEngine.Random.Range(0, pool.Count)];
-         }
-
-         rarity--; // fallback
+         result.Add(possibleBoons[UnityEngine.Random.Range(0, possibleBoons.Count)]);
       }
-
-      Debug.LogWarning("No valid boons found!");
-      return null;
+      return result;
    }
 
 

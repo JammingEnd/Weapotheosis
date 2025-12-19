@@ -54,8 +54,6 @@ namespace NetworkHandlers
         {
             
             if (_stats == null || !_stats.Initialized) return;
-    
-            Debug.Log("Speed: " + maxSpeed);
             
             Vector3 wishDir = transform.TransformDirection(
                 new Vector3(input.x, 0, input.y)

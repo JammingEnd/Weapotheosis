@@ -7,13 +7,14 @@ using Models.Projectiles;
 
 public class ProjectileHitHandler : NetworkBehaviour
 {
-    
     private ProjectileType _projectileType;
     
     private PlayerStatHandler _owner;
     private float _damage;
     private float _speed;
     private float _poldistance;
+    
+    private bool _initialized = false;
     
     Vector3 _previousPosition;
     
@@ -23,10 +24,6 @@ public class ProjectileHitHandler : NetworkBehaviour
         _owner = owner;
         _projectileType = projectileType;
         _speed = speed;
-    }
-    
-    public override void OnStartServer()
-    {
         _previousPosition = transform.position;
     }
 
@@ -34,35 +31,40 @@ public class ProjectileHitHandler : NetworkBehaviour
     private void FixedUpdate()
     {
         if (!isServer) return;
-        
-        Vector3 currentPosition = transform.position;
 
-        Vector3 movement = transform.forward * _speed * Time.fixedDeltaTime;
+        if (!_initialized)
+        {
+            _previousPosition = transform.position;
+            _initialized = true;
+            return;
+        }
+
+        Vector3 movement = transform.position - _previousPosition;
         float distance = movement.magnitude;
 
-        if (Physics.SphereCast(
-                _previousPosition,
-                0.07f,
-                movement.normalized,
-                out RaycastHit hit,
-                distance))
+        if (distance > 0f)
         {
-            Collide(hit.collider);
+            Vector3 direction = movement.normalized;
+            if (Physics.SphereCast(_previousPosition, 0.06f, direction, out RaycastHit hit, distance))
+            {
+                _poldistance = hit.distance;
+                if(hit.collider.gameObject != _owner.gameObject)
+                    Collide(hit.collider, hit.point);
+            }
         }
-       
+
+        _previousPosition = transform.position;
     }
-
-
-    
-    private void Collide(Collider other)
+    private void Collide(Collider other, Vector3 hitPos) 
     {
+        if(!isServer) return;
         if(other.gameObject == _owner.gameObject) return;
         
         if(other.TryGetComponent(out EntityHealthHandler healthHandler))
         {
             healthHandler.TakeDamage(_damage);
         }
-        RpcPlayHitEffect(transform.position + (transform.forward * _poldistance), other.transform.rotation);
+        RpcPlayHitEffect(hitPos, other.transform.rotation);
         StartCoroutine(DestroyProjectileNextFrame());
     }
     

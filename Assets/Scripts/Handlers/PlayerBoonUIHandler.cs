@@ -68,6 +68,8 @@ public class PlayerBoonUIHandler : MonoBehaviour
 		
 		boonPanel.SetActive(false);
 		PlayerUIHandler.instance.rootPanel.gameObject.SetActive(true);
+		
+		CursorHelper.LockCursor();
 	}
 
 	public void SelectBoon(int boonId, GameObject card)

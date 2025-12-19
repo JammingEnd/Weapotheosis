@@ -651,7 +651,7 @@ MonoBehaviour:
   _currentRound: 0
   availableBoons: {fileID: 11400000, guid: d670f25833512e207a636d796dc7c1c0, type: 2}
   boonsPerRound: 3
-  chooseTime: 10
+  chooseTime: 3
 --- !u!4 &1017901792
 Transform:
   m_ObjectHideFlags: 0

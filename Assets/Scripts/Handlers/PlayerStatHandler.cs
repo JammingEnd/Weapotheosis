@@ -236,6 +236,26 @@ public class PlayerStatHandler : NetworkBehaviour
         SetCurrentStats();
     }
     
+    [Server]
+    public HashSet<int> GetUnavailbleBoons()
+    {
+        HashSet<int> unavailable = new();
+        
+        foreach (var pair in activeBoons)
+        {
+            int boonId = pair.Key;
+            int stacks = pair.Value;
+
+            BoonCardSC boon = BoonDatabase.GetBoonById(boonId);
+
+            if (boon.MaxStacks != 0 && stacks >= boon.MaxStacks)
+            {
+                unavailable.Add(boonId);
+            }
+        }
+        return unavailable;
+    }
+    
     [Command]
     public void CmdSelectBoon(int boonId)
     {
@@ -243,7 +263,6 @@ public class PlayerStatHandler : NetworkBehaviour
         AddBoon(boon.BoonId);
         RecalculateStatsRoundStart();
         DisableControls = false;
-        CursorHelper.LockCursor();
     }
     
     #endregion

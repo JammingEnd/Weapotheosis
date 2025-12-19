@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 910350422289491054}
   - component: {fileID: 7988405766243254696}
   - component: {fileID: 5042476494086685870}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -148,7 +148,7 @@ GameObject:
   - component: {fileID: 5539106714014891802}
   - component: {fileID: 187890271887656134}
   - component: {fileID: 5339247794030811554}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -236,7 +236,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9111267358667697207}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: WeaponRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -269,7 +269,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2954604730467300675}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Firepoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -301,7 +301,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6768457025656609036}
   - component: {fileID: 8886408787754285490}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: CameraPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -377,7 +377,7 @@ GameObject:
   - component: {fileID: -8746252088208527552}
   - component: {fileID: 544401324958301564}
   - component: {fileID: 678833895122575287}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: PlayerRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -659,9 +659,41 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 7.383
       objectReference: {fileID: 0}
+    - target: {fileID: -5949304215606058430, guid: ae3398534083dc442ab695390916c419, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -3118562956406048602, guid: ae3398534083dc442ab695390916c419, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: ae3398534083dc442ab695390916c419, type: 3}
       propertyPath: m_Name
       value: Aug_LP
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: ae3398534083dc442ab695390916c419, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1169684818017026655, guid: ae3398534083dc442ab695390916c419, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3096693014523590308, guid: ae3398534083dc442ab695390916c419, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4609053458463391326, guid: ae3398534083dc442ab695390916c419, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5713128200543737393, guid: ae3398534083dc442ab695390916c419, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8665606449048508660, guid: ae3398534083dc442ab695390916c419, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 8938517368691919948, guid: ae3398534083dc442ab695390916c419, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

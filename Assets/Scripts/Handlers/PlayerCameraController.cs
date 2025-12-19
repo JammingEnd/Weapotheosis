@@ -13,7 +13,8 @@ public class PlayerCameraController : NetworkBehaviour
     
     private InputSystem_Actions inputActions;
 
-    public float MouseSensitivity = 2f;
+    private Vector2 lookInput;
+    public float MouseSensitivity = 1f;
     private float xRotation = 0f;
     private float mouseX, mouseY;
     public Transform cameraPivot;
@@ -22,6 +23,8 @@ public class PlayerCameraController : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
         if(_stats.DisableControls) return;
+        
+        if (lookInput.magnitude < 0.01f) lookInput = Vector2.zero;
 
         float mouseX = lookInput.x * MouseSensitivity;
         float mouseY = lookInput.y * MouseSensitivity;
@@ -43,7 +46,7 @@ public class PlayerCameraController : NetworkBehaviour
             playercamRoot.gameObject.SetActive(false);
     }
     
-    private Vector2 lookInput;
+   
 
     public override void OnStartLocalPlayer()
     {
