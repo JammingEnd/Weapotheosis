@@ -152,12 +152,15 @@ public class GameRoundHandler : NetworkBehaviour
       );
       List<int> result = new();
       
-      for (int i = 0; i < count; i++)
+      while (result.Count < count)
       {
          BoonRarity rarity = RollRarity();
          List<int> possibleBoons = availableBoonIds
             .Where(id => BoonDatabase.GetBoonById(id).Rarity == rarity)
             .ToList();
+         
+         if(possibleBoons.Count == 0) continue;
+         
          result.Add(possibleBoons[UnityEngine.Random.Range(0, possibleBoons.Count)]);
       }
       return result;
