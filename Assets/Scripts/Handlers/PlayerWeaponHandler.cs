@@ -13,6 +13,7 @@ public class PlayerWeaponHandler : NetworkBehaviour
     
     public Transform firePoint;
     [SerializeField] private Animator gunAnimator;
+    [SerializeField] private Animator characterAnimator;
 
     private PlayerStatHandler _stats;
     private float _currentCooldown;
@@ -142,11 +143,18 @@ public class PlayerWeaponHandler : NetworkBehaviour
 
         float reloadSpeedMultiplier = 1.5f / ReloadTime;
         gunAnimator.SetFloat("animSpeed", reloadSpeedMultiplier);
+        characterAnimator.SetFloat("animSpeed", reloadSpeedMultiplier);
 
         if (fullReload)
+        {
             gunAnimator.SetTrigger("ReloadFull");
+            characterAnimator.SetTrigger("reloadEmpty");
+        }
         else
+        {
             gunAnimator.SetTrigger("ReloadPartial");
+            characterAnimator.SetTrigger("reloadTactical");
+        }
     }
 
     [ClientRpc]

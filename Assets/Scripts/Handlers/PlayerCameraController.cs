@@ -23,8 +23,6 @@ public class PlayerCameraController : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
         if(_stats.DisableControls) return;
-        
-        if (lookInput.magnitude < 0.01f) lookInput = Vector2.zero;
 
         float mouseX = lookInput.x * MouseSensitivity;
         float mouseY = lookInput.y * MouseSensitivity;

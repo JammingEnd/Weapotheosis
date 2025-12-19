@@ -159,9 +159,12 @@ public class GameRoundHandler : NetworkBehaviour
             .Where(id => BoonDatabase.GetBoonById(id).Rarity == rarity)
             .ToList();
          
-         if(possibleBoons.Count == 0) continue;
          
-         result.Add(possibleBoons[UnityEngine.Random.Range(0, possibleBoons.Count)]);
+         if(possibleBoons.Count == 0) continue;
+
+         int pick = possibleBoons[UnityEngine.Random.Range(0, possibleBoons.Count)];
+         result.Add(pick);
+         availableBoonIds.Remove(pick);
       }
       return result;
    }
