@@ -16,7 +16,11 @@ public class EntityHealthHandler : NetworkBehaviour
     [Server]
     public void TakeDamage(float damage)
     {
-        if (_stats == null) return;
+        if (_stats == null)
+        {
+            Debug.LogWarning("No stats found");
+            return;
+        }
         
         Debug.Log("Ouch!, damage received " + damage);
         

@@ -49,16 +49,18 @@ public class ProjectileHitHandler : NetworkBehaviour
             {
                 _poldistance = hit.distance;
                 if(hit.collider.gameObject != _owner.gameObject)
-                    Collide(hit.collider, hit.point);
+                    Collide(hit.collider.gameObject, hit.point);
             }
         }
 
         _previousPosition = transform.position;
     }
-    private void Collide(Collider other, Vector3 hitPos) 
+    
+    [Server]
+    private void Collide(GameObject other, Vector3 hitPos) 
     {
         if(!isServer) return;
-        if(other.gameObject == _owner.gameObject) return;
+        if(other == _owner.gameObject) return;
         
         if(other.TryGetComponent(out EntityHealthHandler healthHandler))
         {
