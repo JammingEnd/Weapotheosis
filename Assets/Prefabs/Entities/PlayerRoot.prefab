@@ -369,6 +369,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1694222781678677522}
   - component: {fileID: 6361964965911077102}
+  - component: {fileID: -2925541905290087586}
   - component: {fileID: 7288298844082039783}
   - component: {fileID: 2251992321655787707}
   - component: {fileID: 736417195806410900}
@@ -422,6 +423,21 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 64
+--- !u!114 &-2925541905290087586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7273187195688825592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea1e04ae37c8487ae923baffb32d7e71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EntityHealthHandler
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
 --- !u!114 &7288298844082039783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -532,7 +548,7 @@ MonoBehaviour:
   syncInterval: 0
   _playerCamera: {fileID: 910350422289491054}
   playercamRoot: {fileID: 4265487870185020463}
-  MouseSensitivity: 0.8
+  MouseSensitivity: 0.1
   cameraPivot: {fileID: 6768457025656609036}
 --- !u!114 &-8746252088208527552
 MonoBehaviour:
@@ -574,7 +590,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 1
-  m_Constraints: 80
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!136 &678833895122575287
 CapsuleCollider:
