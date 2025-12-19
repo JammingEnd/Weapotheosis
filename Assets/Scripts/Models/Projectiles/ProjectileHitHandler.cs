@@ -15,6 +15,8 @@ public class ProjectileHitHandler : NetworkBehaviour
     private float _speed;
     private float _poldistance;
     
+    Vector3 _previousPosition;
+    
     public void Initialize(float damage, PlayerStatHandler owner, ProjectileType projectileType, float speed)
     {
         _damage = damage;
@@ -22,23 +24,28 @@ public class ProjectileHitHandler : NetworkBehaviour
         _projectileType = projectileType;
         _speed = speed;
     }
+    
+    public override void OnStartServer()
+    {
+        _previousPosition = transform.position;
+    }
+
 
     private void FixedUpdate()
     {
         if (!isServer) return;
         
-       // collision detection using spherecast
-        float radius = 0.05f;
-        float _poldistance = _speed * Time.fixedDeltaTime;
-        float castDistance = _poldistance;
+        Vector3 currentPosition = transform.position;
 
-        Vector3 origin = transform.position;
+        Vector3 movement = transform.forward * _speed * Time.fixedDeltaTime;
+        float distance = movement.magnitude;
+
         if (Physics.SphereCast(
-                origin,
-                radius,
-                transform.forward,
+                _previousPosition,
+                0.07f,
+                movement.normalized,
                 out RaycastHit hit,
-                castDistance))
+                distance))
         {
             Collide(hit.collider);
         }

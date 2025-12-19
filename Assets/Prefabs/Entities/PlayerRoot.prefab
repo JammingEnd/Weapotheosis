@@ -148,7 +148,6 @@ GameObject:
   - component: {fileID: 5539106714014891802}
   - component: {fileID: 187890271887656134}
   - component: {fileID: 5339247794030811554}
-  - component: {fileID: 6670427998127462924}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: Untagged
@@ -228,29 +227,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &6670427998127462924
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 850792833334793556}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5011631025433920143
 GameObject:
   m_ObjectHideFlags: 0
@@ -400,6 +376,7 @@ GameObject:
   - component: {fileID: 5356779964733840522}
   - component: {fileID: -8746252088208527552}
   - component: {fileID: 544401324958301564}
+  - component: {fileID: 678833895122575287}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -599,6 +576,29 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 80
   m_CollisionDetection: 0
+--- !u!136 &678833895122575287
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7273187195688825592}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1001 &5489316129831146561
 PrefabInstance:
   m_ObjectHideFlags: 0
