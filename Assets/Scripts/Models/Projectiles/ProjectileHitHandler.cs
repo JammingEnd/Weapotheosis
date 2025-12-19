@@ -62,6 +62,8 @@ public class ProjectileHitHandler : NetworkBehaviour
         if(!isServer) return;
         if(other == _owner.gameObject) return;
         
+        Debug.Log(other.name);
+        
         if(other.TryGetComponent(out EntityHealthHandler healthHandler))
         {
             healthHandler.TakeDamage(_damage);

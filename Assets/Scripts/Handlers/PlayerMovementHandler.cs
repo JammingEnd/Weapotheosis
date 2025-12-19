@@ -92,8 +92,6 @@ namespace NetworkHandlers
         {
             if (!isLocalPlayer) return;
             if(_stats.DisableControls) return;
-            
-            Debug.Log("Move input received");
 
             movementInput = ctx.ReadValue<Vector2>();
             CmdSetMoveInput(movementInput);
