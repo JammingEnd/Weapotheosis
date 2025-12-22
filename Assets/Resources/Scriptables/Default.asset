@@ -41,9 +41,9 @@ MonoBehaviour:
     - Key: 12
       Value: 0
     - Key: 13
-      Value: 4
+      Value: 12
     - Key: 14
-      Value: 6
+      Value: 14
     - Key: 15
       Value: 9.81
     - Key: 16
@@ -77,7 +77,7 @@ MonoBehaviour:
     - Key: 30
       Value: 1
     - Key: 31
-      Value: 0
+      Value: 1
     - Key: 32
       Value: 0
     - Key: 33

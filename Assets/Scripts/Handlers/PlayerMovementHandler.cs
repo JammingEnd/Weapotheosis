@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using KinematicCharacterController;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Mirror;
@@ -8,165 +9,65 @@ using Unity.VisualScripting;
 
 namespace NetworkHandlers
 {
-    public class PlayerMovementHandler : NetworkBehaviour
+    public class PlayerMovementHandler : NetworkBehaviour, ICharacterController
     {
         public InputSystem_Actions inputActions;
         private PlayerStatHandler _stats;
+        public KinematicCharacterMotor _motor;
+
+        private float _yaw;
+        private float _pendingYaw;
+        public float RotationSharpness = 15f;
+
+        public void AddYaw(float amount)
+        {
+            CmdAddYaw(amount);
+        }
         
-        [Header("Physics")]
-        public Rigidbody rb;
-        public float moveAcceleration = 30f;
-        public float maxSpeed => _stats.GetStatValue<float>(StatType.MovementSpeed);
-        public float airControlMultiplier = 0.4f;
+        [Command]
+        void CmdAddYaw(float amount)
+        {
+            _pendingYaw += amount;
+        }
         
-        private Vector2 movementInput;
-        private bool isGrounded;
-        private bool _hasDoubleJumped = false;
-        [SerializeField] private LayerMask groundMask;
+        [Header("Ground Movement")]
+        private float _maxMoveSpeed => _stats.GetStatValue<float>(StatType.MovementSpeed);
+        public float AccelerationSharpness = 15f;
+        public float Drag = 0.1f;
+        Vector3 _moveInputVector;
+        Vector3 _previousMoveInputVector;
+
+        [Header("Air Movement")] 
+        public float AirSpeedModifier = 0.8f;
+        public float AirControlSharpness = 2f;
+        
+        [Header("Jumping")]
+        private float _jumpForce => _stats.GetStatValue<float>(StatType.JumpHeight);
+        private bool _canDoubleJump => _stats.GetStatValue<bool>(StatType.CanDoubleJump);
+        private bool _hasDoubleJumped;
+        private bool _hasJumped;
+        private bool _jumpRequested;
+        private bool _jumpedThisFrame;
+        private float _timeSinceLastJump;
+        
+        [Header("External forces")]
+        public float KnockbackRecoverySpeed = 5f;
+        private float _gravity => _stats.GetStatValue<float>(StatType.GravityScale);
+        Vector3 _knockbackVelocity;
+        
 
         private void Awake()
         {
             inputActions = new InputSystem_Actions();
         }
-       
-        private void FixedUpdate()
-        {
-            // PLAN: 
-            // if i am the server, move normally. no calls just local input
-            // if i am a client, send input to server and have server move me
-            if(isServer)
-                CheckGrounded(); 
-            
-            if (isServer && isLocalPlayer)
-            {
-                Move(movementInput);
-                
-            }
-            else if(isClient && isLocalPlayer)
-            {
-                CmdMove();
-            }
-        }
-        /// <summary>
-        /// server should move the player
-        /// </summary>
-        void Move(Vector2 input)
-        {
-            
-            if (_stats == null || !_stats.Initialized) return;
-            
-            Vector3 wishDir = transform.TransformDirection(
-                new Vector3(input.x, 0, input.y)
-            );
-
-            float control = isGrounded ? 1f : airControlMultiplier;
-
-            rb.AddForce(wishDir * moveAcceleration * control, ForceMode.Acceleration);
-
-            // Clamp speed
-            Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-            if (horizontalVelocity.magnitude > maxSpeed)
-            {
-                Vector3 clamped = horizontalVelocity.normalized * maxSpeed;
-                rb.linearVelocity = new Vector3(clamped.x, rb.linearVelocity.y, clamped.z);
-            }
-        }
-
-        [Command]
-        private void CmdMove()
-        {
-            MoveRpc(movementInput);
-        }
-
-        [ClientRpc]
-        private void MoveRpc(Vector2 input)
-        {
-            Move(input);
-        }
         
-        /// <summary>
-        /// local player move input
-        /// </summary>
-        /// <param name="ctx"></param>
-        private void OnMove(InputAction.CallbackContext ctx)
-        {
-            if (!isLocalPlayer) return;
-            if(_stats.DisableControls) return;
-
-            movementInput = ctx.ReadValue<Vector2>();
-            CmdSetMoveInput(movementInput);
-        }
-
-        /// <summary>
-        /// server checks if player is grounded
-        /// </summary>
-        [Server]
-        private void CheckGrounded()
-        {
-            // grounded check via spherecast
-            float radius = 0.3f;
-            float castDistance = 0.4f;
-
-            Vector3 origin = transform.position + Vector3.up * (radius + 0.1f);
-            isGrounded = Physics.SphereCast(
-                origin,
-                radius,
-                Vector3.down,
-                out RaycastHit hit,
-                castDistance,
-                groundMask,
-                QueryTriggerInteraction.Ignore
-            );
-
-            if (_hasDoubleJumped && isGrounded)
-            {
-                _hasDoubleJumped = false;
-            }
-        }
-
-        private void Jump(bool isGrounded)
-        {
-            if (isGrounded || _stats.GetStatValue<bool>(StatType.CanDoubleJump) && !_hasDoubleJumped)
-            {
-                if (!isGrounded) _hasDoubleJumped = true;
-
-                float jumpForce = _stats.GetStatValue<float>(StatType.JumpHeight);
-
-                // Reset vertical velocity to make jumps consistent
-                Vector3 vel = rb.linearVelocity;
-                vel.y = 0;
-                rb.linearVelocity = vel;
-
-                rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
-            }
-            
-        }
-
-        [Command]
-        private void CmdJump()
-        {
-            RpcJump(isGrounded);
-        }
-        
-        [ClientRpc]
-        private void RpcJump(bool isGrounded)
-        {
-            Jump(isGrounded);
-        }
-        
-        
-        /// <summary>
-        /// get local stats
-        /// </summary>
         public override void OnStartServer()
         {
             base.OnStartServer();
+            _motor.CharacterController = this;
             _stats = GetComponent<PlayerStatHandler>();
         }
         
-        /// <summary>
-        /// enable input actions for local player
-        /// </summary>
         public override void OnStartLocalPlayer()
         {
             base.OnStartLocalPlayer();
@@ -179,36 +80,13 @@ namespace NetworkHandlers
             _stats = GetComponent<PlayerStatHandler>();
         }
         
-        /// <summary>
-        /// send movementinput from client to server
-        /// </summary>
-        /// <param name="input"></param>
-        [Command]
-        private void CmdSetMoveInput(Vector2 input)
+        private void OnMove(InputAction.CallbackContext context)
         {
-            movementInput = input;
+            Vector2 inputVector = context.ReadValue<Vector2>();
+            _moveInputVector = new Vector3(inputVector.x, 0f, inputVector.y);
+            _moveInputVector = Vector3.ClampMagnitude(_moveInputVector, 1f);
         }
         
-        /// <summary>
-        /// local player jump input
-        /// </summary>
-        /// <param name="ctx"></param>
-        void OnJump(InputAction.CallbackContext ctx)
-        {
-            if (isServer && isLocalPlayer)
-            {
-                Jump(isGrounded);
-                
-            }
-            else if(isClient && isLocalPlayer)
-            {
-                CmdJump();
-            }
-        }
-
-        /// <summary>
-        /// disable input
-        /// </summary>
         private void OnDisable()
         {
             if (isLocalPlayer)
@@ -216,9 +94,181 @@ namespace NetworkHandlers
                 inputActions.Player.Disable();
             }
         }
-
-       
         
+        private void OnJump(InputAction.CallbackContext context)
+        {
+            CmdJump();
+        }
+        
+        [Command]
+        void CmdJump()
+        {
+            Jump();
+        }
+
+        [Server]
+        public void Jump()
+        {
+            if (_motor.GroundingStatus.IsStableOnGround)
+            {
+                _jumpRequested = true;
+            }
+            if (_hasJumped && (_canDoubleJump && !_hasDoubleJumped))
+            {
+                _jumpRequested = true;
+            }
+        }
+        
+        [Server]
+        public void ApplyKnockback(Vector3 direction, float force)
+        {
+            _knockbackVelocity += direction.normalized * force;
+        }
+
+
+        public void UpdateRotation(ref Quaternion currentRotation, float deltaTime)
+        {
+            if (_pendingYaw != 0f)
+            {
+                _yaw += _pendingYaw;
+                _pendingYaw = 0f;
+            }
+
+            currentRotation = Quaternion.Euler(0f, _yaw, 0f);
+        }
+
+        public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime)
+        {
+            Vector3 targetMovementVelocity = Vector3.zero;
+            if (_motor.GroundingStatus.IsStableOnGround)
+            {
+                Vector3 moveDir =
+                    (_motor.CharacterForward * _moveInputVector.z) +
+                    (_motor.CharacterRight * _moveInputVector.x);
+
+                moveDir = Vector3.ClampMagnitude(moveDir, 1f);
+
+                Vector3 targetVelocity = moveDir * _maxMoveSpeed;
+
+                currentVelocity = Vector3.Lerp(
+                    currentVelocity,
+                    targetVelocity,
+                    1f - Mathf.Exp(-AccelerationSharpness * deltaTime)
+                );
+
+                currentVelocity.y = 0f;
+            }
+            else
+            {
+                Vector3 verticalVel = Vector3.Project(currentVelocity, _motor.CharacterUp);
+                Vector3 horizontalVel = currentVelocity - verticalVel;
+                
+                Vector3 inputDir =
+                    (_motor.CharacterForward * _moveInputVector.z) +
+                    (_motor.CharacterRight * _moveInputVector.x);
+                inputDir = Vector3.ClampMagnitude(inputDir, 1f);
+
+                float airControl = 1f; // how effective you can steer (tweak)
+                Vector3 desiredVelChange = inputDir * _maxMoveSpeed * AirSpeedModifier - horizontalVel;
+
+                // Only apply a fraction of the difference
+                horizontalVel += desiredVelChange * airControl * deltaTime;
+                
+                currentVelocity = horizontalVel + verticalVel;
+                currentVelocity += Vector3.down * _gravity * deltaTime;
+            }
+            
+            _jumpedThisFrame = false;
+            _timeSinceLastJump += deltaTime;
+            // jumping
+            if (_jumpRequested)
+            {
+                _motor.ForceUnground();
+
+                Vector3 jumpDirection = _motor.CharacterUp;
+                if (_hasJumped) 
+                {
+                    // Double jump
+                    Vector3 verticalVel = Vector3.Project(currentVelocity, _motor.CharacterUp);
+                    Vector3 inputDir =
+                        (_motor.CharacterForward * _moveInputVector.z) +
+                        (_motor.CharacterRight * _moveInputVector.x);
+                    
+                    inputDir = Vector3.ClampMagnitude(inputDir, 1f);
+                    inputDir *= _maxMoveSpeed;
+                    
+                    currentVelocity = verticalVel + inputDir; // reset velocity for double jump
+                    _hasDoubleJumped = true;
+                }
+                else
+                {
+                    // First jump
+                    _hasJumped = true;
+                }
+
+                currentVelocity += (jumpDirection * _jumpForce) - Vector3.Project(currentVelocity, jumpDirection);
+                _jumpedThisFrame = true;
+                _jumpRequested = false;
+            }
+            
+            // gravity 
+            if (_motor.GroundingStatus.IsStableOnGround)
+            {
+                if (currentVelocity.y < 0f)
+                    currentVelocity.y = 0f;
+            }
+            else
+            {
+                currentVelocity += Vector3.down * _gravity * deltaTime;
+            }
+
+            _previousMoveInputVector = _moveInputVector;
+            // drag 
+            currentVelocity *= (1f / (1f + ( Drag * deltaTime)));
+        }
+
+        public void BeforeCharacterUpdate(float deltaTime)
+        {
+            
+        }
+
+        public void PostGroundingUpdate(float deltaTime)
+        {
+            
+        }
+
+        public void AfterCharacterUpdate(float deltaTime)
+        {
+            
+        }
+
+        public bool IsColliderValidForCollisions(Collider coll)
+        {
+            return true;
+        }
+
+        public void OnGroundHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport)
+        {
+            _hasJumped = false;
+            _hasDoubleJumped = false;
+        }
+
+        public void OnMovementHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint,
+            ref HitStabilityReport hitStabilityReport)
+        {
+            
+        }
+
+        public void ProcessHitStabilityReport(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, Vector3 atCharacterPosition,
+            Quaternion atCharacterRotation, ref HitStabilityReport hitStabilityReport)
+        {
+            
+        }
+
+        public void OnDiscreteCollisionDetected(Collider hitCollider)
+        {
+            
+        }
     }
 }
 

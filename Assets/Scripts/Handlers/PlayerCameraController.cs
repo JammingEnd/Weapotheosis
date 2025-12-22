@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
-
+using NetworkHandlers;
 
 
 public class PlayerCameraController : NetworkBehaviour
 {
     public Camera _playerCamera;
     public Transform playercamRoot;
+    public PlayerMovementHandler _movement;
     private PlayerStatHandler _stats;
     
     private InputSystem_Actions inputActions;
@@ -28,7 +29,7 @@ public class PlayerCameraController : NetworkBehaviour
         float mouseY = lookInput.y * MouseSensitivity;
 
         // Rotate player body (yaw)
-        transform.Rotate(Vector3.up * mouseX);
+        _movement.AddYaw(mouseX);
 
         // Rotate camera pivot (pitch)
         xRotation -= mouseY;
