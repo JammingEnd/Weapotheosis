@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Helpers;
 using UnityEngine;
 using Mirror;
-using Models;
+
 using Models.Boons;
 using Models.Stats;
-using Unity.VisualScripting;
-
 
 
 public class PlayerStatHandler : NetworkBehaviour
@@ -145,9 +142,15 @@ public class PlayerStatHandler : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
+        GameScoreHandler.Instance.RegisterPlayer(this.netId);
         InitializeStats();
-        
         GameRoundHandler.Instance.RegisterPlayer(this);
+    }
+    
+    public override void OnStopServer()
+    {
+        GameScoreHandler.Instance.UnregisterPlayer(netId);
+        Destroy(this.gameObject);
     }
     
     private void OnInitializedChanged(bool oldValue, bool newValue)
