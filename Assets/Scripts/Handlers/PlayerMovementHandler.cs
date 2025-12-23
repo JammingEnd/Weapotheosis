@@ -22,7 +22,7 @@ namespace NetworkHandlers
         public void AddYaw(float amount)
         {
             if(!isLocalPlayer) return;
-            _pendingYaw += amount;
+            CmdRotate(amount);
         }
         
         [Header("Ground Movement")]
@@ -77,8 +77,20 @@ namespace NetworkHandlers
         private void OnMove(InputAction.CallbackContext context)
         {
             Vector2 inputVector = context.ReadValue<Vector2>();
-            _moveInputVector = new Vector3(inputVector.x, 0f, inputVector.y);
+            CmdMove(inputVector);
+            
+        }
+        [Command]
+        void CmdMove(Vector2 moveInput)
+        {
+            _moveInputVector = moveInput;
+            _moveInputVector = new Vector3(moveInput.x, 0f, moveInput.y);
             _moveInputVector = Vector3.ClampMagnitude(_moveInputVector, 1f);
+        }
+        [Command]
+        void CmdRotate(float yaw)
+        {
+            _pendingYaw += yaw;
         }
         
         private void OnDisable()
@@ -119,7 +131,7 @@ namespace NetworkHandlers
             _knockbackVelocity += direction.normalized * force;
         }
 
-
+        
         public void UpdateRotation(ref Quaternion currentRotation, float deltaTime)
         {
             if (_pendingYaw != 0f)
@@ -130,6 +142,7 @@ namespace NetworkHandlers
 
             currentRotation = Quaternion.Euler(0f, _yaw, 0f);
         }
+        
 
         public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime)
         {
