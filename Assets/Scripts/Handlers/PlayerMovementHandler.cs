@@ -61,9 +61,9 @@ namespace NetworkHandlers
             inputActions = new InputSystem_Actions();
         }
 
-        public override void OnStartAuthority()
+        public override void OnStartClient()
         {
-            base.OnStartAuthority();
+            base.OnStartClient();
             _motor.CharacterController = this;
             _stats = GetComponent<PlayerStatHandler>();
         }
