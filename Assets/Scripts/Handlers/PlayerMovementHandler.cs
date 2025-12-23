@@ -64,6 +64,7 @@ namespace NetworkHandlers
         public override void OnStartClient()
         {
             base.OnStartClient();
+            _stats = GetComponent<PlayerStatHandler>();
             _motor.CharacterController = this;
         }
         public override void OnStartLocalPlayer()
@@ -75,7 +76,6 @@ namespace NetworkHandlers
             inputActions.Player.Move.canceled += OnMove;
             inputActions.Player.Jump.performed += OnJump;
             
-            _stats = GetComponent<PlayerStatHandler>();
         }
         
         private void OnMove(InputAction.CallbackContext context)
