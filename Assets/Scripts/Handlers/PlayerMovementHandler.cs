@@ -75,6 +75,11 @@ namespace NetworkHandlers
             inputActions.Player.Move.performed += OnMove;
             inputActions.Player.Move.canceled += OnMove;
             inputActions.Player.Jump.performed += OnJump;
+
+            if (!isServer)
+            {
+                _motor.enabled = false;
+            }
             
         }
         
