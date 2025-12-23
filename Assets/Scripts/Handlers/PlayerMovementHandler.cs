@@ -22,6 +22,7 @@ namespace NetworkHandlers
         public void AddYaw(float amount)
         {
             if(!isLocalPlayer) return;
+            _pendingYaw += amount;
             CmdRotate(amount);
         }
         
