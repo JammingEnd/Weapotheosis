@@ -270,6 +270,4 @@ public class PlayerStatHandler : NetworkBehaviour
     
     #endregion
     
-    
-    
 } 

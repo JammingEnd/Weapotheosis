@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using KinematicCharacterController;
 using UnityEngine;
 using Mirror;
 using Models.Boons;
@@ -48,7 +49,13 @@ public class GameRoundHandler : NetworkBehaviour
    }
 
    #endregion
+
+   #region Spawning
+
+   [SerializeField] private List<Transform> spawnPoints;
+   private List<Transform> _availableSpawnPoints = new List<Transform>();
    
+   #endregion
 
    public void RegisterPlayer(PlayerStatHandler player)
    {
@@ -63,21 +70,26 @@ public class GameRoundHandler : NetworkBehaviour
    
    
    public override void OnStartServer()
-   {
-         base.OnStartServer();
-         if (Instance == null)
-         {
-            Instance = this;
-         }
-         else
-         {
-            Debug.LogError("Multiple instances of GameRoundHandler detected! There should only be one instance.");
-            NetworkServer.Destroy(gameObject);
-         }
-         BoonDatabase.Initialize(availableBoons);
-         
-         
+   {  
+      base.OnStartServer();
+      if (Instance == null)
+      {
+         Instance = this;
+      }
+      else
+      {
+         Debug.LogError("Multiple instances of GameRoundHandler detected! There should only be one instance.");
+         NetworkServer.Destroy(gameObject);
+      }
+      BoonDatabase.Initialize(availableBoons);
+      
+      ResetSpawnPoints();
         
+   }
+   
+   void ResetSpawnPoints()
+   {
+      _availableSpawnPoints = new List<Transform>(spawnPoints);
    }
 
    public override void OnStartClient()
@@ -90,6 +102,7 @@ public class GameRoundHandler : NetworkBehaviour
    {
       _currentRound++;
       _roundActive = false;
+      ResetSpawnPoints();
    }
 
    [Server]
@@ -97,7 +110,29 @@ public class GameRoundHandler : NetworkBehaviour
    {
       //TODO: Restting players
       _roundActive = true;
+      AssignSpawnPoints();
       InitiateBoonPhase();
+   }
+   [Server]
+   void AssignSpawnPoints()
+   {
+      foreach (var player in _players)
+      {
+         if(_availableSpawnPoints.Count == 0)
+            ResetSpawnPoints();
+         
+         int index = UnityEngine.Random.Range(0, _availableSpawnPoints.Count);
+         Transform spawnPoint = _availableSpawnPoints[index];
+         RespawnPlayer(player, spawnPoint);
+         _availableSpawnPoints.RemoveAt(index);
+      }
+   }
+
+   [Server]
+   void RespawnPlayer(PlayerStatHandler player, Transform spawnPoint)
+   {
+      KinematicCharacterMotor kcc = player.GetComponent<KinematicCharacterMotor>();
+      kcc.SetPositionAndRotation(spawnPoint.position, spawnPoint.rotation);
    }
    
    [Server]
