@@ -71,8 +71,11 @@ namespace NetworkHandlers
             inputActions.Player.Move.performed += OnMove;
             inputActions.Player.Move.canceled += OnMove;
             inputActions.Player.Jump.performed += OnJump;
-            
-            _stats = GetComponent<PlayerStatHandler>();
+
+            if (!isServer)
+            {
+                _motor.enabled = false;
+            }
         }
         
         private void OnMove(InputAction.CallbackContext context)
