@@ -66,6 +66,8 @@ namespace NetworkHandlers
             base.OnStartClient();
             _stats = GetComponent<PlayerStatHandler>();
             _motor.CharacterController = this;
+            _motor.enabled = false;
+            
         }
         public override void OnStartLocalPlayer()
         {
@@ -76,10 +78,6 @@ namespace NetworkHandlers
             inputActions.Player.Move.canceled += OnMove;
             inputActions.Player.Jump.performed += OnJump;
 
-            if (!isServer)
-            {
-                _motor.enabled = false;
-            }
             
         }
         
