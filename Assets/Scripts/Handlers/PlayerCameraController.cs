@@ -39,6 +39,8 @@ public class PlayerCameraController : NetworkBehaviour
 
     private void Awake()
     {
+        if(!isLocalPlayer) return;
+        
         inputActions = new InputSystem_Actions();
         
         if (playercamRoot != null)
