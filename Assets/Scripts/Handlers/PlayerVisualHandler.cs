@@ -6,18 +6,17 @@ using Mirror;
 public class PlayerVisualHandler : NetworkBehaviour
 {
     [SerializeField] private Camera _camera;
-    [SerializeField] private GameObject LocalPlayerModel;
-    [SerializeField] private GameObject ClientHands;
     
     public override void OnStartLocalPlayer()
     {
-        if(!isLocalPlayer)
-        {
-            LocalPlayerModel.SetActive(true);
-            ClientHands.SetActive(false);
-            return;
-        }
-        LocalPlayerModel.SetActive(false);
-        ClientHands.SetActive(true);
+        int bodyLayer = LayerMask.NameToLayer("PlayerBody");
+        int handsLayer = LayerMask.NameToLayer("PlayerHands");
+
+        // Hide own body
+        _camera.cullingMask &= ~(1 << bodyLayer);
+
+        // Show hands (ensure layer is included)
+        _camera.cullingMask |= (1 << handsLayer);
     }
+    
 }

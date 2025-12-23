@@ -9,14 +9,14 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - LocalPlayer
+  - 
   - Water
   - UI
   - Ground
   - Entity
   - Slope
-  - 
-  - 
+  - PlayerBody
+  - PlayerHands
   - 
   - 
   - 
