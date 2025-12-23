@@ -21,12 +21,7 @@ namespace NetworkHandlers
 
         public void AddYaw(float amount)
         {
-            CmdAddYaw(amount);
-        }
-        
-        [Command]
-        void CmdAddYaw(float amount)
-        {
+            if(!isLocalPlayer) return;
             _pendingYaw += amount;
         }
         

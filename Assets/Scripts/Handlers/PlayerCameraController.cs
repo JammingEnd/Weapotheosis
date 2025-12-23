@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using NetworkHandlers;
+using UnityEngine.InputSystem;
 
 
 public class PlayerCameraController : NetworkBehaviour
@@ -39,8 +40,6 @@ public class PlayerCameraController : NetworkBehaviour
 
     private void Awake()
     {
-        if(!isLocalPlayer) return;
-        
         inputActions = new InputSystem_Actions();
         
         if (playercamRoot != null)
@@ -51,12 +50,10 @@ public class PlayerCameraController : NetworkBehaviour
 
     public override void OnStartLocalPlayer()
     {
-        base.OnStartLocalPlayer();
-        
         inputActions.Player.Enable();
 
-        inputActions.Player.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
-        inputActions.Player.Look.canceled += ctx => lookInput = Vector2.zero;
+        inputActions.Player.Look.performed += OnLook;
+        inputActions.Player.Look.canceled += OnLookCanceled;
 
         if (playercamRoot != null)
             playercamRoot.gameObject.SetActive(true);
@@ -64,6 +61,15 @@ public class PlayerCameraController : NetworkBehaviour
         _stats = GetComponent<PlayerStatHandler>();
         
         
+    }
+    void OnLook(InputAction.CallbackContext ctx)
+    {
+        lookInput = ctx.ReadValue<Vector2>();
+    }
+
+    void OnLookCanceled(InputAction.CallbackContext ctx)
+    {
+        lookInput = Vector2.zero;
     }
     private void OnDisable()
     {
