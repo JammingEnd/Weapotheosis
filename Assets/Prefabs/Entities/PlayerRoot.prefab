@@ -465,6 +465,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   _camera: {fileID: 910350422289491054}
+  LocalPlayerModel: {fileID: 1678445642926472002}
   ClientHands: {fileID: 8114834007220723885}
 --- !u!136 &6992206340656781657
 CapsuleCollider:
@@ -1036,6 +1037,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2431899823677309083}
   m_SourcePrefab: {fileID: 100100000, guid: 7b3b78067b99aa02dbf1fb62fabbe6a6, type: 3}
+--- !u!1 &1678445642926472002 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7b3b78067b99aa02dbf1fb62fabbe6a6, type: 3}
+  m_PrefabInstance: {fileID: 1984504940028102163}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2017852086009422328 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7b3b78067b99aa02dbf1fb62fabbe6a6, type: 3}
