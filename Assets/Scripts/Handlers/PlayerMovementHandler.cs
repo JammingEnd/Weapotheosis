@@ -76,11 +76,6 @@ namespace NetworkHandlers
             inputActions.Player.Jump.performed += OnJump;
             
             _stats = GetComponent<PlayerStatHandler>();
-
-            if (!isServer)
-            {
-                _motor.enabled = false;
-            }
         }
         
         private void OnMove(InputAction.CallbackContext context)

@@ -348,7 +348,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ff3ba0becae47b8b9381191598957c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Mirror.Components::Mirror.NetworkTransformReliable
-  syncDirection: 1
+  syncDirection: 0
   syncMode: 0
   syncInterval: 0
   target: {fileID: 1694222781678677522}
@@ -465,8 +465,6 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   _camera: {fileID: 910350422289491054}
-  LocalPlayerModel: {fileID: 1678445642926472002}
-  ClientHands: {fileID: 8114834007220723885}
 --- !u!136 &6992206340656781657
 CapsuleCollider:
   m_ObjectHideFlags: 8
@@ -1037,11 +1035,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2431899823677309083}
   m_SourcePrefab: {fileID: 100100000, guid: 7b3b78067b99aa02dbf1fb62fabbe6a6, type: 3}
---- !u!1 &1678445642926472002 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7b3b78067b99aa02dbf1fb62fabbe6a6, type: 3}
-  m_PrefabInstance: {fileID: 1984504940028102163}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2017852086009422328 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7b3b78067b99aa02dbf1fb62fabbe6a6, type: 3}
@@ -1787,11 +1780,6 @@ PrefabInstance:
 --- !u!95 &3257882575832293485 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 5899c3660d8b9674cb55c52154db504d, type: 3}
-  m_PrefabInstance: {fileID: 8961256543352495612}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &8114834007220723885 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 5899c3660d8b9674cb55c52154db504d, type: 3}
   m_PrefabInstance: {fileID: 8961256543352495612}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &8923458411494308375 stripped
