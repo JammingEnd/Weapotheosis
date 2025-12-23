@@ -18,11 +18,10 @@ namespace NetworkHandlers
         private float _yaw;
         private float _pendingYaw;
         public float RotationSharpness = 15f;
-
         public void AddYaw(float amount)
+
         {
             if(!isLocalPlayer) return;
-            _pendingYaw += amount;
             CmdRotate(amount);
         }
         
@@ -57,11 +56,15 @@ namespace NetworkHandlers
             inputActions = new InputSystem_Actions();
         }
 
+        public override void OnStartServer()
+        {
+            _stats = GetComponent<PlayerStatHandler>();
+        }
+
         public override void OnStartClient()
         {
             base.OnStartClient();
             _motor.CharacterController = this;
-            _stats = GetComponent<PlayerStatHandler>();
         }
         public override void OnStartLocalPlayer()
         {
@@ -72,7 +75,7 @@ namespace NetworkHandlers
             inputActions.Player.Move.canceled += OnMove;
             inputActions.Player.Jump.performed += OnJump;
 
-            if (isServer)
+            if (!isServer)
             {
                 _motor.enabled = false;
             }
